@@ -1,0 +1,204 @@
+.profile-page {
+  display: grid;
+  gap: 1.25rem;
+}
+.profile-loading {
+  color: hsl(var(--muted-foreground));
+  min-height: 16rem;
+  padding: 2rem;
+  text-align: center;
+}
+.profile-hero {
+  align-items: center;
+  background: linear-gradient(115deg, hsl(174 72% 32%), hsl(190 55% 36%));
+  border-radius: 0.85rem;
+  color: white;
+  display: flex;
+  gap: 1.25rem;
+  justify-content: space-between;
+  min-height: 8.5rem;
+  overflow: hidden;
+  padding: 1.5rem;
+  position: relative;
+}
+.profile-hero::after {
+  border: 1px solid hsl(0 0% 100% / 0.2);
+  border-radius: 50%;
+  content: "";
+  height: 16rem;
+  position: absolute;
+  right: -4rem;
+  top: -8rem;
+  width: 16rem;
+}
+.profile-identity {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.profile-avatar {
+  background: hsl(0 0% 100% / 0.18) !important;
+  border: 3px solid hsl(0 0% 100% / 0.65);
+  color: white !important;
+  flex: 0 0 auto;
+}
+.profile-hero h2 {
+  color: white;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  margin: 0 0 0.3rem;
+}
+.profile-hero p {
+  color: hsl(0 0% 100% / 0.78);
+  margin: 0;
+}
+.profile-role {
+  background: hsl(0 0% 100% / 0.16);
+  border: 1px solid hsl(0 0% 100% / 0.25);
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-top: 0.65rem;
+  padding: 0.3rem 0.6rem;
+  text-transform: uppercase;
+}
+.profile-hero-actions {
+  position: relative;
+  z-index: 1;
+}
+.profile-hero-actions .ant-btn {
+  background: white;
+  border: 0;
+  color: hsl(174 72% 25%);
+  font-weight: 800;
+}
+.profile-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+}
+.profile-side-column {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+.profile-card {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 24px hsl(222 47% 11% / 0.04);
+}
+.profile-card .ant-card-head {
+  border-bottom: 1px solid hsl(var(--border));
+  min-height: auto;
+  padding: 1rem 1.25rem;
+}
+.profile-card .ant-card-body {
+  padding: 1.25rem;
+}
+.profile-card-title {
+  display: grid;
+  gap: 0.2rem;
+}
+.profile-card-title strong {
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+}
+.profile-card-title span {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+.profile-form-grid {
+  display: grid;
+  gap: 0 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.profile-form-grid .ant-form-item:last-child {
+  grid-column: 1 / -1;
+}
+.profile-form-grid .ant-input[disabled] {
+  color: hsl(var(--foreground));
+  cursor: default;
+}
+.profile-readonly-note {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.74rem;
+  margin: -0.5rem 0 1rem;
+}
+.profile-upload {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+.profile-upload-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+.profile-upload-copy strong {
+  color: hsl(var(--foreground));
+  font-size: 0.85rem;
+}
+.profile-upload-copy span {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.74rem;
+}
+.profile-status-list {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+}
+.profile-status-row {
+  align-items: center;
+  display: flex;
+  gap: 0.7rem;
+}
+.profile-status-icon {
+  align-items: center;
+  background: hsl(var(--primary) / 0.1);
+  border-radius: 0.5rem;
+  color: hsl(var(--primary));
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+.profile-status-row div {
+  display: grid;
+  gap: 0.15rem;
+}
+.profile-status-row strong {
+  color: hsl(var(--foreground));
+  font-size: 0.8rem;
+}
+.profile-status-row span {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.72rem;
+}
+.profile-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+@media (max-width: 760px) {
+  .profile-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .profile-grid,
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-form-grid .ant-form-item:last-child {
+    grid-column: auto;
+  }
+  .profile-actions {
+    justify-content: stretch;
+  }
+  .profile-actions .ant-btn {
+    flex: 1;
+  }
+}

@@ -1,0 +1,204 @@
+import React, { useState } from "react";
+import {
+  ArrowRight,
+  CalendarDays,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { message } from "antd";
+import { Button, Card, Input } from "../ui/primitives";
+import { useRecaptcha } from "./recaptcha";
+import "../../Styles/Auth.styles.css";
+
+export default function Signup() {
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    password: "",
+    confirm: "",
+    role: "Participant",
+  });
+  const { getToken, unavailable: recaptchaUnavailable } =
+    useRecaptcha("register");
+  const navigate = useNavigate();
+
+  const update = (field) => (event) =>
+    setForm({ ...form, [field]: event.target.value });
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (recaptchaUnavailable) {
+      return message.error(
+        "Google reCAPTCHA is unavailable. Please refresh and try again.",
+      );
+    }
+    if (form.password !== form.confirm)
+      return message.error("The passwords do not match!");
+    try {
+      const recaptchaValue = await getToken();
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL || "http://localhost:5030/api"}/auth/register`,
+        {
+          fname: form.firstName,
+          lname: form.lastName,
+          username: form.username,
+          email: form.email,
+          password: form.password,
+          role: form.role,
+          recaptcha: recaptchaValue,
+        },
+      );
+      message.success(response.data.message || "Registration successful!");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Registration failed:", error);
+      message.error(
+        error.response?.data?.message ||
+          (error.message?.includes("reCAPTCHA") ? error.message : null) ||
+          "Registration failed. Please try again.",
+      );
+    }
+  };
+
+  return (
+    <main className="auth-page auth-page-signup">
+      <div className="auth-topbar">
+        <div className="auth-brand">
+          <span className="brand-mark">
+            <CalendarDays size={18} />
+          </span>
+          <strong>Uni</strong>Eventia
+        </div>
+      </div>
+      <div className="auth-layout auth-layout-signup">
+        <section className="auth-story">
+          <p className="eyebrow">
+            <UserRound size={14} /> Join UniEventia
+          </p>
+          <h1>Turn a plan into a place to belong.</h1>
+          <p>
+            Join a community events built around shared interests, generous
+            hosting, and memorable days.
+          </p>
+        </section>
+        <Card className="auth-card">
+          <div className="auth-heading">
+            <p className="auth-kicker">Get started</p>
+            <h2>Create your account</h2>
+            <p>It only takes a minute to find your rhythm.</p>
+          </div>
+          <form onSubmit={onSubmit} className="auth-form auth-form-grid">
+            <label>
+              First name
+              <div className="input-with-icon">
+                <UserRound size={17} />
+                <Input
+                  value={form.firstName}
+                  onChange={update("firstName")}
+                  placeholder="First name"
+                  required
+                />
+              </div>
+            </label>
+            <label>
+              Last name
+              <div className="input-with-icon">
+                <UserRound size={17} />
+                <Input
+                  value={form.lastName}
+                  onChange={update("lastName")}
+                  placeholder="Last name"
+                  required
+                />
+              </div>
+            </label>
+            <label className="auth-full">
+              Username
+              <div className="input-with-icon">
+                <UserRound size={17} />
+                <Input
+                  value={form.username}
+                  onChange={update("username")}
+                  placeholder="Choose a unique username"
+                  required
+                />
+              </div>
+            </label>
+            <label className="auth-full">
+              Role
+              <select
+                className="ui-input"
+                value={form.role}
+                onChange={update("role")}
+              >
+                <option>Participant</option>
+                <option>Organizer</option>
+              </select>
+            </label>
+            <label className="auth-full">
+              UniEventia email
+              <div className="input-with-icon">
+                <Mail size={17} />
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={update("email")}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+            </label>
+            <label>
+              Password
+              <div className="input-with-icon">
+                <LockKeyhole size={17} />
+                <Input
+                  type="password"
+                  value={form.password}
+                  onChange={update("password")}
+                  placeholder="Create a password"
+                  required
+                />
+              </div>
+            </label>
+            <label>
+              Confirm password
+              <div className="input-with-icon">
+                <LockKeyhole size={17} />
+                <Input
+                  type="password"
+                  value={form.confirm}
+                  onChange={update("confirm")}
+                  placeholder="Repeat password"
+                  required
+                />
+              </div>
+            </label>
+            <div className="captcha-wrap auth-full">
+              <span className="captcha-note">
+                Protected by Google reCAPTCHA
+              </span>
+            </div>
+            {recaptchaUnavailable && (
+              <p className="captcha-fallback auth-full" role="status">
+                Google reCAPTCHA could not load. Please refresh the page and try
+                again.
+              </p>
+            )}
+            <Button type="submit" className="auth-submit auth-full">
+              Create account <ArrowRight size={17} />
+            </Button>
+          </form>
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </Card>
+      </div>
+    </main>
+  );
+}

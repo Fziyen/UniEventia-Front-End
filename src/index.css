@@ -1,0 +1,325 @@
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --muted: 210 30% 94%;
+  --muted-foreground: 215 16% 47%;
+  --border: 214 25% 88%;
+  --input: 214 25% 88%;
+  --primary: 174 72% 32%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 38 92% 50%;
+  --danger: 0 72% 51%;
+  --ring: 174 72% 32%;
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-muted: 215 20% 65%;
+  --radius: 0.75rem;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "DM Sans", "Avenir Next", sans-serif;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+a {
+  color: hsl(var(--primary));
+}
+
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
+.ui-button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) - 2px);
+  display: inline-flex;
+  gap: 0.5rem;
+  justify-content: center;
+  font-weight: 700;
+  transition: 150ms ease;
+}
+.ui-button:focus-visible,
+.ui-input:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+.ui-button-default {
+  min-height: 2.65rem;
+  padding: 0.65rem 1rem;
+}
+.ui-button-sm {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.75rem;
+}
+.ui-button-icon {
+  height: 2.5rem;
+  padding: 0;
+  width: 2.5rem;
+}
+.ui-button-default {
+  min-height: 2.65rem;
+  padding: 0.65rem 1rem;
+}
+.ui-button-sm {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.75rem;
+}
+.ui-button-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.ui-button-primary:hover {
+  filter: brightness(1.08);
+}
+.ui-button-secondary {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+.ui-button-secondary:hover,
+.ui-button-ghost:hover {
+  background: hsl(var(--muted));
+}
+.ui-button-outline {
+  background: transparent;
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+.ui-button-outline:hover {
+  background: hsl(var(--muted));
+}
+.ui-button-ghost {
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.ui-button-destructive {
+  background: hsl(var(--danger));
+  color: white;
+}
+.ui-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 12px 30px hsl(222 47% 11% / 0.06);
+  color: hsl(var(--card-foreground));
+}
+.ui-input {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--input));
+  border-radius: calc(var(--radius) - 2px);
+  color: hsl(var(--foreground));
+  min-height: 2.65rem;
+  padding: 0.65rem 0.8rem;
+  width: 100%;
+}
+.ui-input::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}
+.ui-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+.ui-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.ui-badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.28rem 0.58rem;
+}
+.ui-avatar {
+  align-items: center;
+  background: hsl(var(--primary) / 0.14);
+  border-radius: 999px;
+  color: hsl(var(--primary));
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-weight: 800;
+  height: 2.5rem;
+  justify-content: center;
+  overflow: hidden;
+  width: 2.5rem;
+}
+.ui-avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+.ui-separator {
+  background: hsl(var(--border));
+  height: 1px;
+  width: 100%;
+}
+.ui-button-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.ui-button-primary:hover {
+  filter: brightness(1.08);
+}
+.ui-button-outline {
+  background: transparent;
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+.ui-input::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}
+.ui-button-ghost {
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+.ui-button-destructive {
+  background: hsl(var(--danger));
+  color: white;
+}
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-picker,
+.ant-select-selector {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--input)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+.ant-input-affix-wrapper .ant-input,
+.ant-picker-input > input,
+.ant-select-selection-item,
+.ant-select-selection-placeholder,
+.ant-input::placeholder,
+.ant-picker-input > input::placeholder {
+  color: hsl(var(--foreground)) !important;
+  opacity: 1;
+}
+.ant-input::placeholder,
+.ant-picker-input > input::placeholder,
+.ant-select-selection-placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+}
+.ant-form-item-explain-error,
+.ant-form-item-extra,
+.ant-upload-list-item-name,
+.ant-empty-description,
+.ant-empty-normal .ant-empty-description,
+.ant-list-item-meta-description {
+  color: hsl(var(--muted-foreground)) !important;
+}
+.ant-modal-header,
+.ant-modal-footer,
+.ant-modal-content,
+.ant-modal-title {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+.ant-modal-close,
+.ant-btn,
+.ant-upload-text,
+.ant-upload-hint,
+.ant-card-head,
+.ant-card-head-title {
+  color: hsl(var(--foreground));
+}
+.ui-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+.ui-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+.ui-badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.58rem;
+  text-transform: uppercase;
+}
+.ui-badge-muted {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+.ui-badge-primary {
+  background: hsl(var(--primary) / 0.14);
+  color: hsl(var(--primary));
+}
+.ui-avatar {
+  align-items: center;
+  background: hsl(var(--primary) / 0.14);
+  border-radius: 999px;
+  color: hsl(var(--primary));
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-weight: 800;
+  height: 2.5rem;
+  justify-content: center;
+  overflow: hidden;
+  width: 2.5rem;
+}
+.ui-avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+.ui-separator {
+  background: hsl(var(--border));
+  height: 1px;
+  width: 100%;
+}
+
+/* Keep existing Ant Design data controls inside the same semantic theme. */
+.ant-card,
+.ant-modal-content,
+.ant-list-item {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+.ant-typography,
+.ant-card .ant-card-meta-title,
+.ant-card .ant-card-meta-description,
+.ant-list-item-meta-title,
+.ant-list-item-meta-description,
+.ant-form-item-label > label {
+  color: hsl(var(--foreground));
+}
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-picker,
+.ant-select-selector {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--input)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+.ant-empty-description,
+.ant-empty-normal .ant-empty-description {
+  color: hsl(var(--muted-foreground));
+}
+.ant-modal-header,
+.ant-modal-footer {
+  background: hsl(var(--card));
+}
