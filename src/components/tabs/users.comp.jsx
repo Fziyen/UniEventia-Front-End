@@ -70,7 +70,7 @@ const Users = () => {
   };
 
   const getAvatarUrl = (profilePicture) => {
-    return getMediaUrl(profilePicture);
+    return getMediaUrl(profilePicture, "profile");
   };
 
   const displayName = selectedUser

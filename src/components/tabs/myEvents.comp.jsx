@@ -196,7 +196,7 @@ export default function MyEvents() {
                 cover={
                   <img
                     alt={event.title}
-                    src={getMediaUrl(event.coverImage)}
+                    src={getMediaUrl(event.coverImage, "event")}
                     style={{ height: 200, objectFit: "cover" }}
                   />
                 }

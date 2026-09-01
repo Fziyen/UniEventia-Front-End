@@ -69,8 +69,22 @@ export default function Signup() {
           recaptcha: recaptchaValue,
         },
       );
+
+      const { token, user } = response.data;
+      if (token && user) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+
       message.success(response.data.message || "Registration successful!");
-      navigate("/login", { replace: true });
+      navigate(
+        user?.role === "Organizer"
+          ? "/organizer-layout"
+          : "/participant-layout",
+        {
+          replace: true,
+        },
+      );
     } catch (error) {
       console.error("Registration failed:", error);
       message.error(

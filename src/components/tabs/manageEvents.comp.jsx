@@ -311,7 +311,10 @@ const ManageEvents = () => {
               <Card
                 hoverable
                 cover={
-                  <img alt={event.title} src={getMediaUrl(event.coverImage)} />
+                  <img
+                    alt={event.title}
+                    src={getMediaUrl(event.coverImage, "event")}
+                  />
                 }
                 onClick={() => showModal(event)}
               >

@@ -44,7 +44,8 @@ export default function AppShell({ role, renderPage }) {
   const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const navigate = useNavigate();
-  const isOrganizer = role === "Organizer";
+  const activeRole = user?.role || role;
+  const isOrganizer = activeRole === "Organizer";
   const navigation = isOrganizer ? organizerNavigation : participantNavigation;
 
   useEffect(() => {
@@ -55,7 +56,17 @@ export default function AppShell({ role, renderPage }) {
       return;
     }
     try {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+
+      const expectedPath =
+        parsedUser?.role === "Organizer"
+          ? "/organizer-layout"
+          : "/participant-layout";
+
+      if (window.location.pathname !== expectedPath) {
+        navigate(expectedPath, { replace: true });
+      }
     } catch (error) {
       localStorage.removeItem("user");
       navigate("/login", { replace: true });
@@ -198,7 +209,7 @@ export default function AppShell({ role, renderPage }) {
             </Button>
             <div className="header-user">
               <Avatar
-                src={getMediaUrl(user?.profilePicture)}
+                src={getMediaUrl(user?.profilePicture, "profile")}
                 fallback={initials || "M"}
               />
               <div className="header-user-copy">

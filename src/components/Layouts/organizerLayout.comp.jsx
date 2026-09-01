@@ -1,4 +1,5 @@
 import React from "react";
+import { Navigate } from "react-router-dom";
 import AppShell from "./appShell.comp";
 import Events from "../tabs/events.comp";
 import UploadEvent from "../tabs/uploadEvent.comp";
@@ -9,6 +10,18 @@ import ManageEvents from "../tabs/manageEvents.comp";
 import PastEvents from "../tabs/pastEvents.comp";
 
 export default function OrganizerLayout() {
+  let storedUser = null;
+
+  try {
+    storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    storedUser = null;
+  }
+
+  if (!storedUser || storedUser.role !== "Organizer") {
+    return <Navigate to="/participant-layout" replace />;
+  }
+
   return (
     <AppShell
       role="Organizer"

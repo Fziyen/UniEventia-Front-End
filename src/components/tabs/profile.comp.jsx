@@ -91,6 +91,16 @@ export default function Profile() {
       form.setFieldsValue(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
       setIsEditing(false);
+
+      const nextPath =
+        response.data.role === "Organizer"
+          ? "/organizer-layout"
+          : "/participant-layout";
+
+      if (window.location.pathname !== nextPath) {
+        navigate(nextPath, { replace: true });
+      }
+
       message.success("Profile updated.");
     } catch (error) {
       console.error("Failed to update profile:", error);
@@ -198,7 +208,7 @@ export default function Profile() {
           <Avatar
             className="profile-avatar"
             size={84}
-            src={getMediaUrl(user.profilePicture)}
+            src={getMediaUrl(user.profilePicture, "profile")}
             icon={!user.profilePicture ? <UserOutlined /> : null}
           >
             {!user.profilePicture && initials}
@@ -320,7 +330,7 @@ export default function Profile() {
             <div className="profile-upload">
               <Avatar
                 size={58}
-                src={getMediaUrl(user.profilePicture)}
+                src={getMediaUrl(user.profilePicture, "profile")}
                 icon={!user.profilePicture ? <UserOutlined /> : null}
               >
                 {!user.profilePicture && initials}
@@ -357,32 +367,6 @@ export default function Profile() {
           </Card>
 
           <Card
-            className="profile-card danger-zone"
-            title={
-              <div className="profile-card-title danger-zone-title">
-                <strong>Danger zone</strong>
-                <span>Permanent account actions.</span>
-              </div>
-            }
-          >
-            <div className="danger-zone-content">
-              <p>
-                Delete your account and remove all access to your UniEventia
-                workspace.
-              </p>
-              <Button
-                danger
-                block
-                icon={<DeleteOutlined />}
-                onClick={handleDeleteAccount}
-                className="danger-zone-button"
-              >
-                Delete account
-              </Button>
-            </div>
-          </Card>
-
-          <Card
             className="profile-card"
             title={
               <div className="profile-card-title">
@@ -410,6 +394,31 @@ export default function Profile() {
                   <span>Credentials are securely stored.</span>
                 </div>
               </div>
+            </div>
+          </Card>
+          <Card
+            className="profile-card danger-zone"
+            title={
+              <div className="profile-card-title danger-zone-title">
+                <strong>Danger zone</strong>
+                <span>Permanent account actions.</span>
+              </div>
+            }
+          >
+            <div className="danger-zone-content">
+              <p>
+                Delete your account and remove all access to your UniEventia
+                workspace.
+              </p>
+              <Button
+                danger
+                block
+                icon={<DeleteOutlined />}
+                onClick={handleDeleteAccount}
+                className="danger-zone-button"
+              >
+                Delete account
+              </Button>
             </div>
           </Card>
         </div>

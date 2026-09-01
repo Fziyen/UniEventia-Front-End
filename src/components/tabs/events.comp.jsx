@@ -193,10 +193,7 @@ export default function Events({ view = "upcoming" }) {
                   cover={
                     <img
                       alt={event.title}
-                      src={
-                        getMediaUrl(event.coverImage) ||
-                        require("../../uploads/SCR-20240701-oifn.jpeg")
-                      }
+                      src={getMediaUrl(event.coverImage, "event")}
                     />
                   }
                 >
@@ -239,10 +236,7 @@ export default function Events({ view = "upcoming" }) {
             <div>
               <img
                 className="event-detail-image"
-                src={
-                  getMediaUrl(selectedEvent.coverImage) ||
-                  require("../../uploads/SCR-20240701-oifn.jpeg")
-                }
+                src={getMediaUrl(selectedEvent.coverImage, "event")}
                 alt={selectedEvent.title}
               />
               <Title level={4}>{selectedEvent.title}</Title>
@@ -289,7 +283,10 @@ export default function Events({ view = "upcoming" }) {
                         <List.Item.Meta
                           avatar={
                             <Avatar
-                              src={getMediaUrl(comment.user?.profilePicture)}
+                              src={getMediaUrl(
+                                comment.user?.profilePicture,
+                                "profile",
+                              )}
                               alt={`${comment.user?.fname || "Member"}`}
                             />
                           }
@@ -328,7 +325,10 @@ export default function Events({ view = "upcoming" }) {
                         <List.Item.Meta
                           avatar={
                             <Avatar
-                              src={getMediaUrl(review.user?.profilePicture)}
+                              src={getMediaUrl(
+                                review.user?.profilePicture,
+                                "profile",
+                              )}
                               alt={`${review.user?.fname || "Participant"}`}
                             />
                           }
