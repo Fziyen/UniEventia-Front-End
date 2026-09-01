@@ -145,6 +145,59 @@
   color: hsl(var(--muted-foreground));
   font-size: 0.74rem;
 }
+.danger-zone {
+  background: hsl(0 72% 55% / 0.02);
+  border: 1px solid hsl(0 72% 55% / 0.55);
+  box-shadow: 0 0 0 1px hsl(0 72% 55% / 0.08);
+}
+.danger-zone .ant-card-head {
+  border-bottom-color: hsl(0 72% 55% / 0.25);
+}
+.danger-zone-title {
+  position: relative;
+}
+.danger-zone-title strong {
+  color: hsl(0 72% 42%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.danger-zone-title strong::before {
+  background: hsl(0 72% 55%);
+  border-radius: 0.4rem;
+  content: "!";
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  height: 1rem;
+  line-height: 1;
+  width: 1rem;
+}
+.danger-zone-content {
+  display: grid;
+  gap: 0.9rem;
+}
+.danger-zone-content p {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8rem;
+  margin: 0;
+}
+.danger-zone-button {
+  background: hsl(0 72% 55%) !important;
+  border-color: hsl(0 72% 55%) !important;
+  color: white !important;
+  font-weight: 700;
+  height: 2.8rem;
+}
+.danger-zone-button:hover,
+.danger-zone-button:focus {
+  background: hsl(0 68% 48%) !important;
+  border-color: hsl(0 68% 48%) !important;
+  color: white !important;
+}
 .profile-status-list {
   display: grid;
   gap: 0.9rem;

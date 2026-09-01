@@ -132,16 +132,76 @@
 }
 .input-with-icon .ui-input {
   padding-left: 2.45rem;
+  padding-right: 2.75rem;
+}
+.password-input-wrap .password-toggle {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  padding: 0 0.8rem 0 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.password-input-wrap .password-toggle:hover {
+  color: hsl(var(--foreground));
+}
+.password-input-wrap.password-invalid,
+.password-input-wrap .input-invalid {
+  border-color: hsl(0 80% 55%);
+  box-shadow: 0 0 0 1px hsl(0 80% 55% / 0.25);
+}
+.password-input-wrap {
+  border-radius: var(--radius);
+  width: 100%;
+}
+.password-input-wrap .ui-input {
+  width: 100%;
+}
+.password-rules {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+}
+.password-rules li {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.72rem;
+  font-weight: 600;
+  list-style: none;
+  position: relative;
+}
+.password-rules li::before {
+  content: "•";
+  margin-right: 0.45rem;
+}
+.password-rules li.is-valid {
+  color: hsl(142 72% 38%);
+}
+.password-rules li.is-invalid {
+  color: hsl(0 80% 55%);
 }
 .auth-form .ui-input {
   min-width: 0;
 }
 .auth-form select.ui-input {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground)) 50%), linear-gradient(135deg, hsl(var(--muted-foreground)) 50%, transparent 50%);
-  background-position: calc(100% - 1rem) 50%, calc(100% - 0.65rem) 50%;
+  background-image:
+    linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground)) 50%),
+    linear-gradient(135deg, hsl(var(--muted-foreground)) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1rem) 50%,
+    calc(100% - 0.65rem) 50%;
   background-repeat: no-repeat;
-  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+  background-size:
+    0.35rem 0.35rem,
+    0.35rem 0.35rem;
   padding-right: 2.25rem;
 }
 .auth-submit {

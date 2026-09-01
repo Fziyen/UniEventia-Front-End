@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
+  Eye,
+  EyeOff,
   LockKeyhole,
   Mail,
   UserRound,
@@ -23,9 +25,23 @@ export default function Signup() {
     confirm: "",
     role: "Participant",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { getToken, unavailable: recaptchaUnavailable } =
     useRecaptcha("register");
   const navigate = useNavigate();
+
+  const passwordChecks = useMemo(() => {
+    const value = form.password || "";
+    return [
+      { label: "At least 8 characters", valid: value.length >= 8 },
+      { label: "One uppercase letter", valid: /[A-Z]/.test(value) },
+      { label: "One lowercase letter", valid: /[a-z]/.test(value) },
+      { label: "One number", valid: /\d/.test(value) },
+    ];
+  }, [form.password]);
+
+  const passwordIsValid = passwordChecks.every((rule) => rule.valid);
 
   const update = (field) => (event) =>
     setForm({ ...form, [field]: event.target.value });
@@ -153,30 +169,82 @@ export default function Signup() {
                 />
               </div>
             </label>
-            <label>
+            <label className="auth-full">
               Password
-              <div className="input-with-icon">
+              <div
+                className={`input-with-icon password-input-wrap ${
+                  form.password && !passwordIsValid ? "password-invalid" : ""
+                }`}
+              >
                 <LockKeyhole size={17} />
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={update("password")}
                   placeholder="Create a password"
                   required
+                  className={
+                    form.password && !passwordIsValid ? "input-invalid" : ""
+                  }
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((value) => !value)}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
+              <ul className="password-rules">
+                {passwordChecks.map((rule) => (
+                  <li
+                    key={rule.label}
+                    className={rule.valid ? "is-valid" : "is-invalid"}
+                  >
+                    {rule.label}
+                  </li>
+                ))}
+              </ul>
             </label>
-            <label>
+            <label className="auth-full">
               Confirm password
-              <div className="input-with-icon">
+              <div
+                className={`input-with-icon password-input-wrap ${
+                  form.confirm && form.password !== form.confirm
+                    ? "password-invalid"
+                    : ""
+                }`}
+              >
                 <LockKeyhole size={17} />
                 <Input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={form.confirm}
                   onChange={update("confirm")}
                   placeholder="Repeat password"
                   required
+                  className={
+                    form.confirm && form.password !== form.confirm
+                      ? "input-invalid"
+                      : ""
+                  }
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
               </div>
             </label>
             <div className="captcha-wrap auth-full">

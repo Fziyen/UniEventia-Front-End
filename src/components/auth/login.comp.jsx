@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, LockKeyhole, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+} from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { message } from "antd";
@@ -9,6 +16,7 @@ import "../../Styles/Auth.styles.css";
 
 export default function Login() {
   const [form, setForm] = useState({ identifier: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const { getToken, unavailable: recaptchaUnavailable } = useRecaptcha("login");
   const navigate = useNavigate();
   const location = useLocation();
@@ -122,10 +130,10 @@ export default function Login() {
             </label>
             <label>
               Password
-              <div className="input-with-icon">
+              <div className="input-with-icon password-input-wrap">
                 <LockKeyhole size={17} />
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={(event) =>
                     setForm({ ...form, password: event.target.value })
@@ -133,6 +141,14 @@ export default function Login() {
                   placeholder="Enter your password"
                   required
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((value) => !value)}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </label>
             <div className="captcha-wrap">

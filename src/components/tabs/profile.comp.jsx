@@ -217,13 +217,6 @@ export default function Profile() {
           >
             {isEditing ? "Save changes" : "Edit profile"}
           </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={handleDeleteAccount}
-          >
-            Delete account
-          </Button>
         </div>
       </section>
 
@@ -361,6 +354,32 @@ export default function Profile() {
                 Upload photo
               </Button>
             )}
+          </Card>
+
+          <Card
+            className="profile-card danger-zone"
+            title={
+              <div className="profile-card-title danger-zone-title">
+                <strong>Danger zone</strong>
+                <span>Permanent account actions.</span>
+              </div>
+            }
+          >
+            <div className="danger-zone-content">
+              <p>
+                Delete your account and remove all access to your UniEventia
+                workspace.
+              </p>
+              <Button
+                danger
+                block
+                icon={<DeleteOutlined />}
+                onClick={handleDeleteAccount}
+                className="danger-zone-button"
+              >
+                Delete account
+              </Button>
+            </div>
           </Card>
 
           <Card
