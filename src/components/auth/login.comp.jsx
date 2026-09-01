@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, CalendarDays, LockKeyhole, Mail } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { message } from "antd";
 import { Button, Card, Input } from "../ui/primitives";
@@ -11,24 +11,33 @@ export default function Login() {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const { getToken, unavailable: recaptchaUnavailable } = useRecaptcha("login");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname !== "/login") {
+      return;
+    }
+
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        navigate(
-          user?.role === "Organizer"
-            ? "/organizer-layout"
-            : "/participant-layout",
-          { replace: true },
-        );
-      } catch (error) {
-        localStorage.removeItem("user");
-      }
+    if (!token || !storedUser) {
+      return;
     }
-  }, [navigate]);
+
+    try {
+      const user = JSON.parse(storedUser);
+      if (!user?.role) {
+        return;
+      }
+
+      navigate(
+        user.role === "Organizer" ? "/organizer-layout" : "/participant-layout",
+        { replace: true },
+      );
+    } catch (error) {
+      localStorage.removeItem("user");
+    }
+  }, [location.pathname, navigate]);
 
   const onSubmit = async (event) => {
     event.preventDefault();

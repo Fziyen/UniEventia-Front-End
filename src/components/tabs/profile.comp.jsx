@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   CheckCircleOutlined,
   CameraOutlined,
+  DeleteOutlined,
   EditOutlined,
   LockOutlined,
   MailOutlined,
@@ -9,8 +10,19 @@ import {
   SafetyCertificateOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button, Card, Form, Input, message, Upload } from "antd";
+import {
+  Avatar,
+  Button,
+  Card,
+  Form,
+  Input,
+  message,
+  Modal,
+  Select,
+  Upload,
+} from "antd";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { API_URL, getMediaUrl } from "../../api";
 import "../../Styles/Profile.css";
 
@@ -30,6 +42,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
 
   const displayName = useMemo(
     () => `${user?.fname || ""} ${user?.lname || ""}`.trim() || "Member",
@@ -121,6 +134,59 @@ export default function Profile() {
     setIsEditing(false);
   };
 
+  const handleDeleteAccount = () => {
+    let confirmText = "";
+
+    Modal.confirm({
+      title: "Delete your account?",
+      width: 520,
+      okText: "Delete permanently",
+      okType: "danger",
+      cancelText: "Keep account",
+      content: (
+        <div>
+          <p>
+            This will permanently remove your account, profile, and access to
+            UniEventia. This action cannot be undone.
+          </p>
+          <p style={{ marginTop: 12, marginBottom: 8 }}>
+            Type <strong>DELETE</strong> to confirm.
+          </p>
+          <Input
+            placeholder="DELETE"
+            onChange={(event) => {
+              confirmText = event.target.value;
+            }}
+          />
+        </div>
+      ),
+      onOk: async () => {
+        if (confirmText.trim() !== "DELETE") {
+          message.error("Please type DELETE to confirm account deletion.");
+          return Promise.reject(new Error("Confirmation required"));
+        }
+
+        try {
+          await axios.delete(`${API_URL}/users/profile`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          message.success("Your account has been deleted.");
+          navigate("/login", { replace: true });
+        } catch (error) {
+          console.error("Failed to delete account:", error);
+          message.error(
+            error.response?.data?.message ||
+              "Your account could not be deleted.",
+          );
+        }
+      },
+    });
+  };
+
   if (isLoading)
     return <div className="profile-loading">Loading your profile...</div>;
   if (!user) return null;
@@ -151,6 +217,13 @@ export default function Profile() {
           >
             {isEditing ? "Save changes" : "Edit profile"}
           </Button>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteAccount}
+          >
+            Delete account
+          </Button>
         </div>
       </section>
 
@@ -168,8 +241,12 @@ export default function Profile() {
         >
           <Form form={form} layout="vertical" onFinish={handleSave}>
             <div className="profile-form-grid">
-              <Form.Item label="Username" name="username">
-                <Input disabled prefix={<UserOutlined />} />
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: "Enter your username." }]}
+              >
+                <Input disabled={!isEditing} prefix={<UserOutlined />} />
               </Form.Item>
               <Form.Item
                 label="First name"
@@ -185,11 +262,28 @@ export default function Profile() {
               >
                 <Input disabled={!isEditing} />
               </Form.Item>
-              <Form.Item label="Email address" name="email">
-                <Input disabled prefix={<MailOutlined />} />
+              <Form.Item
+                label="Email address"
+                name="email"
+                rules={[
+                  { required: true, message: "Enter your email address." },
+                  { type: "email", message: "Enter a valid email address." },
+                ]}
+              >
+                <Input disabled={!isEditing} prefix={<MailOutlined />} />
               </Form.Item>
-              <Form.Item label="Account role" name="role">
-                <Input disabled prefix={<SafetyCertificateOutlined />} />
+              <Form.Item
+                label="Account role"
+                name="role"
+                rules={[{ required: true, message: "Choose a role." }]}
+              >
+                <Select
+                  disabled={!isEditing}
+                  prefix={<SafetyCertificateOutlined />}
+                >
+                  <Select.Option value="Participant">Participant</Select.Option>
+                  <Select.Option value="Organizer">Organizer</Select.Option>
+                </Select>
               </Form.Item>
               <Form.Item label="Bio" name="bio">
                 <Input.TextArea
@@ -201,8 +295,8 @@ export default function Profile() {
               </Form.Item>
             </div>
             <p className="profile-readonly-note">
-              Email, username, and role changes require an administrator for
-              account safety.
+              Keep your contact details and workspace role aligned with your
+              current account usage.
             </p>
             {isEditing && (
               <div className="profile-actions">
