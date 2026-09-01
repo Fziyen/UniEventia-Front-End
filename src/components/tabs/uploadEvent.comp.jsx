@@ -81,6 +81,8 @@ const UploadEvent = () => {
       return;
     }
 
+    setIsLoading(true);
+
     const [selectedStartDate, selectedEndDate] = values.dateRange;
     const startDate = selectedStartDate.clone();
     const endDate = selectedEndDate.clone().endOf("day");
@@ -148,6 +150,8 @@ const UploadEvent = () => {
         // Handle generic errors
         message.error("Failed to upload event. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -290,7 +294,7 @@ const UploadEvent = () => {
         </Form.Item>
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={isLoading}>
               Submit
             </Button>
             <Button htmlType="button" onClick={() => form.resetFields()}>
