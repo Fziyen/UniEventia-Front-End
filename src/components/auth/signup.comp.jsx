@@ -132,6 +132,7 @@ export default function Signup() {
                   onChange={update("firstName")}
                   placeholder="First name"
                   required
+                  maxLength={50}
                 />
               </div>
             </label>
@@ -144,32 +145,36 @@ export default function Signup() {
                   onChange={update("lastName")}
                   placeholder="Last name"
                   required
+                  maxLength={50}
                 />
               </div>
             </label>
-            <label className="auth-full">
-              Username
-              <div className="input-with-icon">
-                <UserRound size={17} />
-                <Input
-                  value={form.username}
-                  onChange={update("username")}
-                  placeholder="Choose a unique username"
-                  required
-                />
-              </div>
-            </label>
-            <label className="auth-full">
-              Role
-              <select
-                className="ui-input"
-                value={form.role}
-                onChange={update("role")}
-              >
-                <option>Participant</option>
-                <option>Organizer</option>
-              </select>
-            </label>
+            <div className="auth-row-split">
+              <label className="auth-half">
+                Username
+                <div className="input-with-icon">
+                  <UserRound size={17} />
+                  <Input
+                    value={form.username}
+                    onChange={update("username")}
+                    placeholder="Choose a unique username"
+                    required
+                    maxLength={25}
+                  />
+                </div>
+              </label>
+              <label className="auth-half">
+                Role
+                <select
+                  className="ui-input"
+                  value={form.role}
+                  onChange={update("role")}
+                >
+                  <option>Participant</option>
+                  <option>Organizer</option>
+                </select>
+              </label>
+            </div>
             <label className="auth-full">
               UniEventia email
               <div className="input-with-icon">
@@ -180,6 +185,7 @@ export default function Signup() {
                   onChange={update("email")}
                   placeholder="you@example.com"
                   required
+                  maxLength={254}
                 />
               </div>
             </label>
@@ -197,6 +203,7 @@ export default function Signup() {
                   onChange={update("password")}
                   placeholder="Create a password"
                   required
+                  maxLength={128}
                   className={
                     form.password && !passwordIsValid ? "input-invalid" : ""
                   }
@@ -237,6 +244,7 @@ export default function Signup() {
                   onChange={update("confirm")}
                   placeholder="Repeat password"
                   required
+                  maxLength={128}
                   className={
                     form.confirm && form.password !== form.confirm
                       ? "input-invalid"

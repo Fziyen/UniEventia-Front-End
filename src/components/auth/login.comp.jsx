@@ -125,6 +125,7 @@ export default function Login() {
                   }
                   placeholder="Enter your username or email"
                   required
+                  maxLength={254}
                 />
               </div>
             </label>
@@ -140,6 +141,7 @@ export default function Login() {
                   }
                   placeholder="Enter your password"
                   required
+                  maxLength={128}
                 />
                 <button
                   type="button"
