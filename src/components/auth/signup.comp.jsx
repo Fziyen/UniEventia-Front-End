@@ -110,7 +110,7 @@ export default function Signup() {
           <p className="eyebrow">
             <UserRound size={14} /> Join UniEventia
           </p>
-          <h1>Turn a plan into a place to belong.</h1>
+          <h1>Discover your next event.</h1>
           <p>
             Join a community events built around shared interests, generous
             hosting, and memorable days.
