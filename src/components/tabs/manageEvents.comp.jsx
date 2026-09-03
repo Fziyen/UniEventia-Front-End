@@ -167,6 +167,12 @@ const ManageEvents = () => {
       description: selectedEvent.description,
       dateRange: [startDate, endDate],
       startTime: startDate,
+      endTime:
+        endDate.hour() === 23 &&
+        endDate.minute() === 59 &&
+        endDate.second() === 59
+          ? null
+          : endDate,
       location: selectedEvent.location,
       maxParticipants: selectedEvent.maxParticipants || 50,
     });
@@ -189,7 +195,6 @@ const ManageEvents = () => {
 
       const [selectedStartDate, selectedEndDate] = values.dateRange;
       const startDate = selectedStartDate.clone();
-      const endDate = selectedEndDate.clone().endOf("day");
 
       if (values.startTime) {
         startDate
@@ -197,6 +202,21 @@ const ManageEvents = () => {
           .minute(values.startTime.minute())
           .second(0)
           .millisecond(0);
+      }
+      const endDate = selectedEndDate.clone();
+      if (values.endTime) {
+        endDate
+          .hour(values.endTime.hour())
+          .minute(values.endTime.minute())
+          .second(0)
+          .millisecond(0);
+      } else {
+        endDate.endOf("day");
+      }
+      if (!endDate.isAfter(startDate)) {
+        message.error("End time must be after the start time.");
+        setIsUpdating(false);
+        return;
       }
 
       const formData = new FormData();
@@ -539,9 +559,18 @@ const ManageEvents = () => {
                 placeholder="e.g. 50"
               />
             </Form.Item>
-            <Form.Item name="startTime" label="Start time (optional)">
-              <TimePicker format="HH:mm" style={{ width: "100%" }} />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item name="startTime" label="Start time (optional)">
+                  <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item name="endTime" label="End time (optional)">
+                  <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item name="coverImage" label="Cover Image (optional)">
               <Upload
                 maxCount={1}
