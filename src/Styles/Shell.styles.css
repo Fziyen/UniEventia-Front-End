@@ -258,6 +258,26 @@
   min-height: 420px;
   padding: clamp(1rem, 2vw, 1.6rem);
 }
+.community-user-card {
+  min-width: 0;
+}
+.community-user-card .ant-card-body {
+  min-width: 0;
+}
+.community-user-username,
+.community-user-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.community-user-username {
+  margin: 8px 0 0;
+}
+.community-user-card .ant-card-meta-title {
+  margin-bottom: 0;
+}
 .my-events-page .my-events-toolbar {
   align-items: center;
   display: flex;

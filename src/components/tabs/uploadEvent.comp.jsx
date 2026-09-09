@@ -27,6 +27,52 @@ const UploadEvent = () => {
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getEndTimeValidation = (_, value) => {
+    const [startDate, endDate] = form.getFieldValue("dateRange") || [];
+    const startTime = form.getFieldValue("startTime");
+
+    if (!value || !startDate || !endDate || !startTime) {
+      return Promise.resolve();
+    }
+
+    if (
+      startDate.isSame(endDate, "day") &&
+      value.isSameOrBefore(startTime, "minute")
+    ) {
+      return Promise.reject(
+        new Error("End time must be later than the start time."),
+      );
+    }
+
+    return Promise.resolve();
+  };
+
+  const getDisabledEndTime = () => {
+    const [startDate, endDate] = form.getFieldValue("dateRange") || [];
+    const startTime = form.getFieldValue("startTime");
+
+    if (
+      !startDate ||
+      !endDate ||
+      !startTime ||
+      !startDate.isSame(endDate, "day")
+    ) {
+      return {};
+    }
+
+    const startHour = startTime.hour();
+    const startMinute = startTime.minute();
+
+    return {
+      disabledHours: () =>
+        Array.from({ length: startHour }, (_, index) => index),
+      disabledMinutes: (selectedHour) =>
+        selectedHour === startHour
+          ? Array.from({ length: startMinute + 1 }, (_, index) => index)
+          : [],
+    };
+  };
+
   // Fetch organizer's events to calculate rate limit status
   useEffect(() => {
     fetchRateLimitInfo();
@@ -298,10 +344,16 @@ const UploadEvent = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item name="endTime" label="End time (optional)">
+            <Form.Item
+              name="endTime"
+              label="End time (optional)"
+              dependencies={["dateRange", "startTime"]}
+              rules={[{ validator: getEndTimeValidation }]}
+            >
               <TimePicker
                 format="HH:mm"
                 minuteStep={5}
+                disabledTime={getDisabledEndTime}
                 placeholder="Select an end time"
                 style={{ width: "100%" }}
               />

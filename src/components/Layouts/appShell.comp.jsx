@@ -10,7 +10,6 @@ import {
   LogOut,
   Menu,
   PanelLeft,
-  Search,
   ShieldCheck,
   Users,
   X,
@@ -228,14 +227,6 @@ export default function AppShell({ role, renderPage }) {
                   ? "Find your next gathering"
                   : currentPage}
               </h1>
-            </div>
-            <div className="content-accent">
-              <Search size={18} />
-              <span>
-                {isOrganizer
-                  ? "Your events, one view"
-                  : "Your community, one view"}
-              </span>
             </div>
           </div>
           <Card className="page-panel">{renderPage(currentPage)}</Card>

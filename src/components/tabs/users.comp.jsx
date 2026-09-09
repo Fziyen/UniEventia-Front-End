@@ -19,6 +19,24 @@ import { getMediaUrl, API_URL } from "../../api";
 const { Search } = Input;
 const { Text, Paragraph } = Typography;
 
+const formatJoinedDate = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "Join date unavailable";
+
+  const day = date.getDate();
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+  const month = date.toLocaleString("en-US", { month: "long" });
+
+  return `${day}${suffix} ${month} ${date.getFullYear()}`;
+};
+
 const Users = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -88,7 +106,7 @@ const Users = () => {
       <Spin spinning={isLoading} tip="Loading users...">
         <Row gutter={[16, 16]}>
           {filteredUsers.map((user) => (
-            <Col key={user._id} xs={24} sm={12} md={8} lg={6} xl={4}>
+            <Col key={user._id} xs={24} sm={12} md={8} lg={6} xl={6}>
               <Card
                 hoverable
                 className="community-user-card"
@@ -105,10 +123,15 @@ const Users = () => {
                     size={96}
                     style={{ marginBottom: 12 }}
                   />
-                  <h3 style={{ margin: "8px 0 0 0" }}>{user.username}</h3>
+                  <h3 className="community-user-username">{user.username}</h3>
                 </div>
                 <Card.Meta
-                  title={`${user.fname} ${user.lname}`}
+                  title={
+                    <span className="community-user-name">
+                      {`${user.fname || ""} ${user.lname || ""}`.trim() ||
+                        "Member"}
+                    </span>
+                  }
                   description={
                     <div>
                       <Tag
@@ -162,6 +185,12 @@ const Users = () => {
               style={{ fontSize: 16, display: "block", marginBottom: 16 }}
             >
               @{selectedUser.username}
+            </Text>
+            <Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 16 }}
+            >
+              Member since {formatJoinedDate(selectedUser.createdAt)}
             </Text>
             <div style={{ marginBottom: 16 }}>
               <Tag
