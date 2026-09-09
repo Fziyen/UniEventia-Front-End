@@ -92,10 +92,7 @@ export default function Profile() {
       localStorage.setItem("user", JSON.stringify(response.data));
       setIsEditing(false);
 
-      const nextPath =
-        response.data.role === "Organizer"
-          ? "/organizer-layout"
-          : "/participant-layout";
+      const nextPath = "/Dashboard";
 
       if (window.location.pathname !== nextPath) {
         navigate(nextPath, { replace: true });

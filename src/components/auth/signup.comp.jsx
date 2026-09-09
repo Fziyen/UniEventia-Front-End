@@ -77,14 +77,7 @@ export default function Signup() {
       }
 
       message.success(response.data.message || "Registration successful!");
-      navigate(
-        user?.role === "Organizer"
-          ? "/organizer-layout"
-          : "/participant-layout",
-        {
-          replace: true,
-        },
-      );
+      navigate("/Dashboard", { replace: true });
     } catch (error) {
       console.error("Registration failed:", error);
       message.error(

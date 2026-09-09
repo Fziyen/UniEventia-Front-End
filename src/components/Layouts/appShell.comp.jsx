@@ -59,10 +59,7 @@ export default function AppShell({ role, renderPage }) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
 
-      const expectedPath =
-        parsedUser?.role === "Organizer"
-          ? "/organizer-layout"
-          : "/participant-layout";
+      const expectedPath = "/Dashboard";
 
       if (window.location.pathname !== expectedPath) {
         navigate(expectedPath, { replace: true });

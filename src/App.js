@@ -2,8 +2,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/auth/login.comp.jsx";
 import Signup from "./components/auth/signup.comp.jsx";
-import OrganizerLayout from "./components/Layouts/organizerLayout.comp.jsx";
-import ParticipantLayout from "./components/Layouts/participantLayout.comp.jsx";
+import Dashboard from "./components/dashboard.comp.jsx";
 import ProtectedRoute from "./components/protectedRoute.comp.jsx";
 import "./App.css";
 
@@ -14,10 +13,18 @@ function App() {
       <Route path="/register" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route
+        path="/Dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/organizer-layout"
         element={
           <ProtectedRoute>
-            <OrganizerLayout />
+            <Dashboard />
           </ProtectedRoute>
         }
       />
@@ -25,7 +32,7 @@ function App() {
         path="/participant-layout"
         element={
           <ProtectedRoute>
-            <ParticipantLayout />
+            <Dashboard />
           </ProtectedRoute>
         }
       />

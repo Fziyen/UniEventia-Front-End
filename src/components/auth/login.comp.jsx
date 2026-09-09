@@ -38,10 +38,7 @@ export default function Login() {
         return;
       }
 
-      navigate(
-        user.role === "Organizer" ? "/organizer-layout" : "/participant-layout",
-        { replace: true },
-      );
+      navigate("/Dashboard", { replace: true });
     } catch (error) {
       localStorage.removeItem("user");
     }
@@ -66,10 +63,7 @@ export default function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       message.success("Logged in successfully!");
-      navigate(
-        user.role === "Organizer" ? "/organizer-layout" : "/participant-layout",
-        { replace: true },
-      );
+      navigate("/Dashboard", { replace: true });
     } catch (error) {
       console.error("Login failed:", error);
       message.error(
