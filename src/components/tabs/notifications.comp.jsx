@@ -129,11 +129,13 @@ const Notifications = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
           marginBottom: 16,
         }}
       >
         <h2 style={{ margin: 0 }}>Notifications</h2>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {notifications.some((item) => !item.read) && (
             <Button type="primary" ghost onClick={markAllAsRead}>
               Mark all as read

@@ -72,3 +72,25 @@
     padding-top: 1.25rem;
   }
 }
+@media (max-width: 560px) {
+  .ant-modal {
+    margin: 0.75rem auto;
+    max-width: calc(100vw - 1.5rem);
+    top: 0;
+  }
+  .ant-modal-content {
+    padding: 1rem;
+  }
+  .ant-modal-body {
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+  }
+  .event-detail-image {
+    height: auto;
+    max-height: 13rem;
+  }
+  .ant-picker-range,
+  .ant-picker {
+    width: 100%;
+  }
+}

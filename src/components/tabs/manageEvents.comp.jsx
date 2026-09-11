@@ -28,6 +28,7 @@ import axios from "axios";
 import moment from "moment";
 import { getMediaUrl, API_URL } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import { compressImage } from "../../lib/compressImage";
 import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
@@ -233,7 +234,11 @@ const ManageEvents = () => {
 
       const image = values.coverImage?.[0]?.originFileObj;
       if (image) {
-        formData.append("coverImage", image);
+        const compressedImage = await compressImage(image, {
+          maxSizeMB: 1.5,
+          maxWidthOrHeight: 1920,
+        });
+        formData.append("coverImage", compressedImage);
       }
 
       const token = localStorage.getItem("token");

@@ -305,4 +305,14 @@
   .auth-story > p:last-of-type {
     font-size: 0.95rem;
   }
+  .auth-layout {
+    margin-top: 2.5rem;
+  }
+  .auth-card {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .auth-row-split {
+    grid-template-columns: 1fr;
+  }
 }

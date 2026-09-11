@@ -258,3 +258,23 @@
     flex: 1;
   }
 }
+@media (max-width: 480px) {
+  .profile-hero {
+    padding: 1.15rem;
+  }
+  .profile-identity {
+    align-items: flex-start;
+  }
+  .profile-upload {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .profile-card .ant-card-head,
+  .profile-card .ant-card-body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .profile-actions {
+    flex-direction: column;
+  }
+}

@@ -19,6 +19,7 @@ import { UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 import { API_URL } from "../../api";
+import { compressImage } from "../../lib/compressImage";
 
 const { RangePicker } = DatePicker;
 
@@ -163,11 +164,15 @@ const UploadEvent = () => {
     formData.append("location", values.location);
     formData.append("maxParticipants", String(values.maxParticipants));
     const image = values.image?.[0]?.originFileObj;
-    if (image) {
-      formData.append("coverImage", image);
-    }
 
     try {
+      if (image) {
+        const compressedImage = await compressImage(image, {
+          maxSizeMB: 1.5,
+          maxWidthOrHeight: 1920,
+        });
+        formData.append("coverImage", compressedImage);
+      }
       const token = localStorage.getItem("token");
       await axios.post(`${API_URL}/events`, formData, {
         headers: {

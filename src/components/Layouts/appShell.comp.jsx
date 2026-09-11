@@ -38,6 +38,7 @@ const participantNavigation = [
 
 export default function AppShell({ role, renderPage }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("Events");
   const [showLogout, setShowLogout] = useState(false);
   const [user, setUser] = useState(null);
@@ -105,9 +106,18 @@ export default function AppShell({ role, renderPage }) {
     navigate("/login", { replace: true });
   };
 
+  const selectPage = (page) => {
+    setCurrentPage(page);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="app-shell">
-      <aside className={`app-sidebar ${collapsed ? "is-collapsed" : ""}`}>
+      <aside
+        className={`app-sidebar ${collapsed ? "is-collapsed" : ""} ${
+          mobileMenuOpen ? "is-mobile-open" : ""
+        }`}
+      >
         <div className="sidebar-brand">
           <span className="brand-mark">
             <CalendarDays size={20} />
@@ -124,7 +134,7 @@ export default function AppShell({ role, renderPage }) {
             <button
               className={`sidebar-link ${currentPage === key ? "is-active" : ""}`}
               key={key}
-              onClick={() => setCurrentPage(key)}
+              onClick={() => selectPage(key)}
               title={collapsed ? label : undefined}
             >
               <Icon size={19} />
@@ -156,7 +166,7 @@ export default function AppShell({ role, renderPage }) {
           <Separator />
           <button
             className={`sidebar-link ${currentPage === "Profile" ? "is-active" : ""}`}
-            onClick={() => setCurrentPage("Profile")}
+            onClick={() => selectPage("Profile")}
             title={collapsed ? "Profile" : undefined}
           >
             <CircleUserRound size={19} />
@@ -180,10 +190,13 @@ export default function AppShell({ role, renderPage }) {
               variant="ghost"
               size="icon"
               className="mobile-menu-button"
-              onClick={() => setCollapsed((value) => !value)}
-              aria-label="Toggle navigation"
+              onClick={() => setMobileMenuOpen((value) => !value)}
+              aria-expanded={mobileMenuOpen}
+              aria-label={
+                mobileMenuOpen ? "Close navigation" : "Open navigation"
+              }
             >
-              <Menu size={20} />
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
             <div className="breadcrumb">
               <span>Workspace</span>
@@ -207,7 +220,7 @@ export default function AppShell({ role, renderPage }) {
               className="header-user"
               role="button"
               tabIndex={0}
-              onClick={() => setCurrentPage("Profile")}
+              onClick={() => selectPage("Profile")}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   setCurrentPage("Profile");
@@ -254,6 +267,14 @@ export default function AppShell({ role, renderPage }) {
           </a>
         </footer>
       </main>
+
+      {mobileMenuOpen && (
+        <button
+          className="mobile-menu-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
       {showLogout && (
         <div

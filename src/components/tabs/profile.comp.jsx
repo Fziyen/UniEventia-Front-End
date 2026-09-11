@@ -25,6 +25,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL, getMediaUrl } from "../../api";
+import { compressImage } from "../../lib/compressImage";
 import "../../Styles/Profile.css";
 
 const getStoredUser = () => {
@@ -115,7 +116,11 @@ export default function Profile() {
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append("profilePicture", profileFile);
+      const compressedImage = await compressImage(profileFile, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1200,
+      });
+      formData.append("profilePicture", compressedImage);
       const response = await axios.put(
         `${API_URL}/users/profile-picture`,
         formData,
