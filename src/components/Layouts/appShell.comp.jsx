@@ -203,7 +203,18 @@ export default function AppShell({ role, renderPage }) {
             >
               <PanelLeft size={18} />
             </Button>
-            <div className="header-user">
+            <div
+              className="header-user"
+              role="button"
+              tabIndex={0}
+              onClick={() => setCurrentPage("Profile")}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  setCurrentPage("Profile");
+                }
+              }}
+              style={{ cursor: "pointer" }}
+            >
               <Avatar
                 src={getMediaUrl(user?.profilePicture, "profile")}
                 fallback={initials || "M"}

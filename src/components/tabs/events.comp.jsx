@@ -25,6 +25,7 @@ import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
 const { Meta } = Card;
@@ -282,15 +283,21 @@ export default function Events({ view = "upcoming" }) {
                       <List.Item>
                         <List.Item.Meta
                           avatar={
-                            <Avatar
-                              src={getMediaUrl(
-                                comment.user?.profilePicture,
-                                "profile",
-                              )}
-                              alt={`${comment.user?.fname || "Member"}`}
-                            />
+                            <UserProfilePreview user={comment.user}>
+                              <Avatar
+                                src={getMediaUrl(
+                                  comment.user?.profilePicture,
+                                  "profile",
+                                )}
+                                alt={`${comment.user?.fname || "Member"}`}
+                              />
+                            </UserProfilePreview>
                           }
-                          title={`${comment.user?.fname || "Member"} ${comment.user?.lname || ""}`}
+                          title={
+                            <UserProfilePreview user={comment.user}>
+                              {`${comment.user?.fname || "Member"} ${comment.user?.lname || ""}`}
+                            </UserProfilePreview>
+                          }
                           description={comment.text}
                         />
                       </List.Item>
@@ -324,15 +331,21 @@ export default function Events({ view = "upcoming" }) {
                       <List.Item>
                         <List.Item.Meta
                           avatar={
-                            <Avatar
-                              src={getMediaUrl(
-                                review.user?.profilePicture,
-                                "profile",
-                              )}
-                              alt={`${review.user?.fname || "Participant"}`}
-                            />
+                            <UserProfilePreview user={review.user}>
+                              <Avatar
+                                src={getMediaUrl(
+                                  review.user?.profilePicture,
+                                  "profile",
+                                )}
+                                alt={`${review.user?.fname || "Participant"}`}
+                              />
+                            </UserProfilePreview>
                           }
-                          title={`${review.user?.fname || "Participant"} ${review.user?.lname || ""}`}
+                          title={
+                            <UserProfilePreview user={review.user}>
+                              {`${review.user?.fname || "Participant"} ${review.user?.lname || ""}`}
+                            </UserProfilePreview>
+                          }
                           description={
                             <>
                               <Rate disabled value={review.rating} />

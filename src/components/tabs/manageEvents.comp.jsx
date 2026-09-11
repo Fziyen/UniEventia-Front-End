@@ -28,6 +28,7 @@ import axios from "axios";
 import moment from "moment";
 import { getMediaUrl, API_URL } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
 const { Meta } = Card;
@@ -404,14 +405,20 @@ const ManageEvents = () => {
                 <List.Item>
                   <List.Item.Meta
                     avatar={
-                      <Avatar
-                        src={
-                          participant.profilePicture ||
-                          "path/to/default-avatar.jpg"
-                        }
-                      />
+                      <UserProfilePreview user={participant}>
+                        <Avatar
+                          src={getMediaUrl(
+                            participant.profilePicture,
+                            "profile",
+                          )}
+                        />
+                      </UserProfilePreview>
                     }
-                    title={`${participant.fname} ${participant.lname}`}
+                    title={
+                      <UserProfilePreview user={participant}>
+                        {`${participant.fname || "Member"} ${participant.lname || ""}`}
+                      </UserProfilePreview>
+                    }
                     description={
                       <span>
                         {participant.email}{" "}
@@ -442,14 +449,20 @@ const ManageEvents = () => {
                 <List.Item>
                   <List.Item.Meta
                     avatar={
-                      <Avatar
-                        src={
-                          review.user.profilePicture ||
-                          "path/to/default-avatar.jpg"
-                        }
-                      />
+                      <UserProfilePreview user={review.user}>
+                        <Avatar
+                          src={getMediaUrl(
+                            review.user?.profilePicture,
+                            "profile",
+                          )}
+                        />
+                      </UserProfilePreview>
                     }
-                    title={review.user.fname}
+                    title={
+                      <UserProfilePreview user={review.user}>
+                        {`${review.user?.fname || "Member"} ${review.user?.lname || ""}`}
+                      </UserProfilePreview>
+                    }
                     description={
                       <>
                         <p>Rating: {review.rating}</p>
