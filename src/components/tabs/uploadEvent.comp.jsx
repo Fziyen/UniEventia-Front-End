@@ -37,7 +37,7 @@ const UploadEvent = () => {
 
     if (
       startDate.isSame(endDate, "day") &&
-      value.isSameOrBefore(startTime, "minute")
+      value.valueOf() <= startTime.valueOf()
     ) {
       return Promise.reject(
         new Error("End time must be later than the start time."),
@@ -132,17 +132,17 @@ const UploadEvent = () => {
     setIsLoading(true);
 
     const [selectedStartDate, selectedEndDate] = values.dateRange;
-    const startDate = selectedStartDate.clone();
+    let startDate = selectedStartDate.clone();
     if (values.startTime) {
-      startDate
+      startDate = startDate
         .hour(values.startTime.hour())
         .minute(values.startTime.minute())
         .second(0)
         .millisecond(0);
     }
-    const endDate = selectedEndDate.clone();
+    let endDate = selectedEndDate.clone();
     if (values.endTime) {
-      endDate
+      endDate = endDate
         .hour(values.endTime.hour())
         .minute(values.endTime.minute())
         .second(0)

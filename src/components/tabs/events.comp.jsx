@@ -24,12 +24,12 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
+import { formatEventDateRange } from "../../lib/eventDates";
 import "../../Styles/Events.css";
 
 const { Meta } = Card;
 const { Title, Text } = Typography;
 
-const getEventStart = (event) => event.startDate || event.StartDate;
 const getEventEnd = (event) => event.endDate || event.EndDate;
 const isPastEvent = (event) => moment(getEventEnd(event)).isBefore(moment());
 
@@ -188,10 +188,12 @@ export default function Events({ view = "upcoming" }) {
             return (
               <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
                 <Card
+                  className="event-card"
                   hoverable
                   onClick={() => setSelectedEvent(event)}
                   cover={
                     <img
+                      className="event-card-image"
                       alt={event.title}
                       src={getMediaUrl(event.coverImage, "event")}
                     />
@@ -201,17 +203,16 @@ export default function Events({ view = "upcoming" }) {
                     title={event.title}
                     description={
                       <>
-                        <Text>{event.description}</Text>
-                        <p>
-                          <CalendarOutlined />{" "}
-                          {moment(getEventStart(event)).format(
-                            "MMM D, YYYY h:mm A",
-                          )}
+                        <Text className="event-card-description">
+                          {event.description}
+                        </Text>
+                        <p className="event-card-info">
+                          <CalendarOutlined /> {formatEventDateRange(event)}
                         </p>
-                        <p>
+                        <p className="event-card-info">
                           <EnvironmentOutlined /> <b>{event.location}</b>
                         </p>
-                        <p>
+                        <p className="event-card-info">
                           <TeamOutlined /> {count} / {limit} participants
                         </p>
                       </>
@@ -243,10 +244,7 @@ export default function Events({ view = "upcoming" }) {
               <Text>{selectedEvent.description}</Text>
               <p>
                 <CalendarOutlined />{" "}
-                {moment(getEventStart(selectedEvent)).format(
-                  "dddd, MMMM D YYYY, h:mm A",
-                )}{" "}
-                - {moment(getEventEnd(selectedEvent)).format("h:mm A")}
+                {formatEventDateRange(selectedEvent, { long: true })}
               </p>
               <p>
                 <EnvironmentOutlined /> {selectedEvent.location}

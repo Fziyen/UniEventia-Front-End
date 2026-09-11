@@ -19,6 +19,8 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
+import { formatEventDateRange } from "../../lib/eventDates";
+import "../../Styles/Events.css";
 
 const { Text, Title } = Typography;
 
@@ -192,27 +194,25 @@ export default function MyEvents() {
           renderItem={(event) => (
             <List.Item>
               <Card
+                className="event-card"
                 hoverable
                 cover={
                   <img
+                    className="event-card-image"
                     alt={event.title}
                     src={getMediaUrl(event.coverImage, "event")}
-                    style={{ height: 200, objectFit: "cover" }}
                   />
                 }
               >
-                <Title level={4}>{event.title}</Title>
-                <p>{event.description}</p>
-                <Text>
-                  <CalendarOutlined />{" "}
-                  {moment(event.startDate || event.StartDate).format(
-                    "ddd, MMM D YYYY, h:mm A",
-                  )}
-                  {(event.endDate || event.EndDate) &&
-                    ` - ${moment(event.endDate || event.EndDate).format("h:mm A")}`}
+                <Title className="event-card-title" level={4}>
+                  {event.title}
+                </Title>
+                <p className="event-card-description">{event.description}</p>
+                <Text className="event-card-info">
+                  <CalendarOutlined /> {formatEventDateRange(event)}
                 </Text>
                 <br />
-                <Text type="secondary">
+                <Text className="event-card-info" type="secondary">
                   <EnvironmentOutlined /> {event.location}
                 </Text>
                 <br />

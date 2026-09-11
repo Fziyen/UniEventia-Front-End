@@ -27,6 +27,8 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { getMediaUrl, API_URL } from "../../api";
+import { formatEventDateRange } from "../../lib/eventDates";
+import "../../Styles/Events.css";
 
 const { Meta } = Card;
 const { Text } = Typography;
@@ -194,18 +196,18 @@ const ManageEvents = () => {
       }
 
       const [selectedStartDate, selectedEndDate] = values.dateRange;
-      const startDate = selectedStartDate.clone();
+      let startDate = selectedStartDate.clone();
 
       if (values.startTime) {
-        startDate
+        startDate = startDate
           .hour(values.startTime.hour())
           .minute(values.startTime.minute())
           .second(0)
           .millisecond(0);
       }
-      const endDate = selectedEndDate.clone();
+      let endDate = selectedEndDate.clone();
       if (values.endTime) {
-        endDate
+        endDate = endDate
           .hour(values.endTime.hour())
           .minute(values.endTime.minute())
           .second(0)
@@ -329,9 +331,11 @@ const ManageEvents = () => {
           {filteredEvents.map((event) => (
             <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
               <Card
+                className="event-card"
                 hoverable
                 cover={
                   <img
+                    className="event-card-image"
                     alt={event.title}
                     src={getMediaUrl(event.coverImage, "event")}
                   />
@@ -342,17 +346,16 @@ const ManageEvents = () => {
                   title={event.title}
                   description={
                     <>
-                      <Text>{event.description}</Text>
-                      <p>
-                        <CalendarOutlined />{" "}
-                        {moment(
-                          event.startDate || event.StartDate || event.date,
-                        ).format("YYYY-MM-DD")}
+                      <Text className="event-card-description">
+                        {event.description}
+                      </Text>
+                      <p className="event-card-info">
+                        <CalendarOutlined /> {formatEventDateRange(event)}
                       </p>
-                      <p>
+                      <p className="event-card-info">
                         <EnvironmentOutlined /> <b>{event.location}</b>
                       </p>
-                      <p>
+                      <p className="event-card-info">
                         Participants:{" "}
                         <b>
                           {event.participants?.length || 0} /{" "}
@@ -385,14 +388,7 @@ const ManageEvents = () => {
           ]}
         >
           <p>{selectedEvent.description}</p>
-          <p>
-            Date:{" "}
-            {moment(
-              selectedEvent.startDate ||
-                selectedEvent.StartDate ||
-                selectedEvent.date,
-            ).format("YYYY-MM-DD")}
-          </p>
+          <p>Date: {formatEventDateRange(selectedEvent, { long: true })}</p>
           <p>Location: {selectedEvent.location}</p>
           <p>
             Participant capacity: {(selectedEvent.participants || []).length} /{" "}
