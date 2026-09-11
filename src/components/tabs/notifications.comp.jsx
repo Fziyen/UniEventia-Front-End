@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { List, Avatar, Spin, message, Empty, Button, Typography } from "antd";
+import {
+  List,
+  Avatar,
+  Spin,
+  message,
+  Empty,
+  Button,
+  Typography,
+  Popconfirm,
+} from "antd";
 import axios from "axios";
 import { API_URL } from "../../api";
 import { formatDistanceToNow } from "date-fns";
-import { BellOutlined } from "@ant-design/icons";
+import { BellOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -76,6 +85,35 @@ const Notifications = () => {
     }
   };
 
+  const clearAllNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      try {
+        await axios.delete(`${API_URL}/notifications/clear-all`, { headers });
+      } catch (error) {
+        if (error.response?.status !== 404) throw error;
+
+        await Promise.all(
+          notifications.map((notification) =>
+            axios.delete(
+              `${API_URL}/notifications/${notification._id || notification.id}`,
+              { headers },
+            ),
+          ),
+        );
+      }
+
+      setNotifications([]);
+      setUnreadCount(0);
+      message.success("All notifications deleted.");
+    } catch (error) {
+      console.error("Failed to delete notifications:", error);
+      message.error("Unable to delete notifications.");
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "20%" }}>
@@ -95,11 +133,27 @@ const Notifications = () => {
         }}
       >
         <h2 style={{ margin: 0 }}>Notifications</h2>
-        {notifications.some((item) => !item.read) && (
-          <Button type="primary" ghost onClick={markAllAsRead}>
-            Mark all as read
-          </Button>
-        )}
+        <div style={{ display: "flex", gap: 8 }}>
+          {notifications.some((item) => !item.read) && (
+            <Button type="primary" ghost onClick={markAllAsRead}>
+              Mark all as read
+            </Button>
+          )}
+          {notifications.length > 0 && (
+            <Popconfirm
+              title="Delete all notifications?"
+              description="This action cannot be undone."
+              okText="Delete"
+              okType="danger"
+              cancelText="Cancel"
+              onConfirm={clearAllNotifications}
+            >
+              <Button danger icon={<DeleteOutlined />}>
+                Clear all
+              </Button>
+            </Popconfirm>
+          )}
+        </div>
       </div>
 
       {unreadCount > 0 && (

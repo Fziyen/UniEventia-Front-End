@@ -291,10 +291,6 @@
 .my-events-page .ant-card {
   height: 100%;
 }
-.my-events-page .ant-card p {
-  color: hsl(var(--muted-foreground));
-  min-height: 2.6rem;
-}
 @media (max-width: 560px) {
   .my-events-page .my-events-toolbar {
     align-items: stretch;
