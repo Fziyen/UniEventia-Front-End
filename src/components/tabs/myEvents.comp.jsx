@@ -4,13 +4,17 @@ import {
   DownloadOutlined,
   EnvironmentOutlined,
   DeleteOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
+  Avatar,
   Button,
   Card,
   Empty,
   List,
+  Row,
+  Col,
   Spin,
   Typography,
   message,
@@ -20,6 +24,7 @@ import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
 const { Text, Title } = Typography;
@@ -77,6 +82,7 @@ const buildCalendarFile = (events) => {
 
 export default function MyEvents() {
   const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -144,6 +150,7 @@ export default function MyEvents() {
           setEvents((prevEvents) =>
             prevEvents.filter((event) => event._id !== eventId),
           );
+          setSelectedEvent(null);
         } catch (error) {
           console.error("Failed to cancel participation:", error);
           message.error(
@@ -183,14 +190,13 @@ export default function MyEvents() {
         />
       )}
       {!error && events.length > 0 && (
-        <List
-          grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
-          dataSource={events}
-          renderItem={(event) => (
-            <List.Item>
+        <Row gutter={[16, 16]}>
+          {events.map((event) => (
+            <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
               <Card
                 className="event-card"
                 hoverable
+                onClick={() => setSelectedEvent(event)}
                 cover={
                   <img
                     className="event-card-image"
@@ -210,22 +216,86 @@ export default function MyEvents() {
                 <Text className="event-card-info" type="secondary">
                   <EnvironmentOutlined /> {event.location}
                 </Text>
-                <br />
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() =>
-                    handleCancelParticipation(event._id, event.title)
-                  }
-                  style={{ marginTop: 12 }}
-                >
-                  Withdraw
-                </Button>
               </Card>
-            </List.Item>
-          )}
-        />
+            </Col>
+          ))}
+        </Row>
       )}
+
+      <Modal
+        title={selectedEvent?.title}
+        open={Boolean(selectedEvent)}
+        onCancel={() => setSelectedEvent(null)}
+        footer={null}
+        width={820}
+      >
+        {selectedEvent && (
+          <div className="event-detail-grid">
+            <div>
+              <img
+                className="event-detail-image"
+                src={getMediaUrl(selectedEvent.coverImage, "event")}
+                alt={selectedEvent.title}
+              />
+              <Title level={4}>{selectedEvent.title}</Title>
+              <Text>{selectedEvent.description}</Text>
+              <p>
+                <CalendarOutlined />{" "}
+                {formatEventDateRange(selectedEvent, { long: true })}
+              </p>
+              <p>
+                <EnvironmentOutlined /> {selectedEvent.location}
+              </p>
+              <p>
+                <TeamOutlined /> {selectedEvent.participants?.length || 0} /{" "}
+                {selectedEvent.maxParticipants || 50} participant spots
+              </p>
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() =>
+                  handleCancelParticipation(
+                    selectedEvent._id,
+                    selectedEvent.title,
+                  )
+                }
+              >
+                Withdraw
+              </Button>
+            </div>
+            <div className="event-conversation">
+              <Title level={4}>What are people hoping to see?</Title>
+              <List
+                dataSource={selectedEvent.comments || []}
+                locale={{ emptyText: "No comments yet." }}
+                renderItem={(comment) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={
+                        <UserProfilePreview user={comment.user}>
+                          <Avatar
+                            src={getMediaUrl(
+                              comment.user?.profilePicture,
+                              "profile",
+                            )}
+                            alt={`${comment.user?.fname || "Member"}`}
+                          />
+                        </UserProfilePreview>
+                      }
+                      title={
+                        <UserProfilePreview user={comment.user}>
+                          {`${comment.user?.fname || "Member"} ${comment.user?.lname || ""}`}
+                        </UserProfilePreview>
+                      }
+                      description={comment.text}
+                    />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
