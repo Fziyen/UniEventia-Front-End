@@ -27,7 +27,7 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { getMediaUrl, API_URL } from "../../api";
-import { formatEventDateRange } from "../../lib/eventDates";
+import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
 import "../../Styles/Events.css";
 
 const { Meta } = Card;
@@ -82,8 +82,9 @@ const ManageEvents = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = response.data || [];
-      setEvents(data);
-      setFilteredEvents(data);
+      const sortedEvents = sortEventsByStart(data);
+      setEvents(sortedEvents);
+      setFilteredEvents(sortedEvents);
     } catch (err) {
       console.error("Error fetching events:", err);
       message.error("Failed to fetch events");
@@ -96,7 +97,7 @@ const ManageEvents = () => {
     const filtered = events.filter((event) =>
       event.title.toLowerCase().includes(value.toLowerCase()),
     );
-    setFilteredEvents(filtered);
+    setFilteredEvents(sortEventsByStart(filtered));
   };
 
   const showModal = (event) => {

@@ -3,6 +3,17 @@ import moment from "moment";
 const getEventDateValue = (event, field) =>
   event?.[field] || event?.[field === "startDate" ? "StartDate" : "EndDate"];
 
+export const getEventStartTimestamp = (event) => {
+  const start = moment(getEventDateValue(event, "startDate"));
+  return start.isValid() ? start.valueOf() : Number.POSITIVE_INFINITY;
+};
+
+export const sortEventsByStart = (events) =>
+  [...events].sort(
+    (first, second) =>
+      getEventStartTimestamp(first) - getEventStartTimestamp(second),
+  );
+
 export const formatEventDateRange = (event, options = {}) => {
   const startValue = getEventDateValue(event, "startDate");
   const endValue = getEventDateValue(event, "endDate");

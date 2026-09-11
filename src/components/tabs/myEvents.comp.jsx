@@ -19,7 +19,7 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
-import { formatEventDateRange } from "../../lib/eventDates";
+import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
 import "../../Styles/Events.css";
 
 const { Text, Title } = Typography;
@@ -100,12 +100,7 @@ export default function MyEvents() {
               String(participant?._id || participant) === String(userId),
           ),
         );
-        joinedEvents.sort(
-          (first, second) =>
-            moment(first.startDate || first.StartDate).valueOf() -
-            moment(second.startDate || second.StartDate).valueOf(),
-        );
-        setEvents(joinedEvents);
+        setEvents(sortEventsByStart(joinedEvents));
       } catch (requestError) {
         console.error("Failed to load participating events:", requestError);
         setError("Your participating events could not be loaded.");

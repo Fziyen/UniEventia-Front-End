@@ -24,7 +24,7 @@ import {
 import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
-import { formatEventDateRange } from "../../lib/eventDates";
+import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
 import "../../Styles/Events.css";
 
 const { Meta } = Card;
@@ -62,11 +62,13 @@ export default function Events({ view = "upcoming" }) {
 
   const visibleEvents = useMemo(() => {
     const normalizedSearch = searchText.toLowerCase();
-    return events
+    const filteredEvents = events
       .filter((event) =>
         view === "past" ? isPastEvent(event) : !isPastEvent(event),
       )
       .filter((event) => event.title.toLowerCase().includes(normalizedSearch));
+
+    return sortEventsByStart(filteredEvents);
   }, [events, searchText, view]);
 
   const participationState =
