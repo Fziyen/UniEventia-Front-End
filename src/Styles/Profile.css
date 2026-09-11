@@ -119,6 +119,9 @@
 .profile-form-grid .ant-form-item:last-child {
   grid-column: 1 / -1;
 }
+.profile-form-grid .profile-bio-field {
+  grid-column: 1 / -1;
+}
 .profile-form-grid .ant-input[disabled] {
   color: hsl(var(--foreground));
   cursor: default;

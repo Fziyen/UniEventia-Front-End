@@ -19,6 +19,7 @@ import {
   message,
   Modal,
   Select,
+  Switch,
   Upload,
 } from "antd";
 import axios from "axios";
@@ -242,13 +243,6 @@ export default function Profile() {
           <Form form={form} layout="vertical" onFinish={handleSave}>
             <div className="profile-form-grid">
               <Form.Item
-                label="Username"
-                name="username"
-                rules={[{ required: true, message: "Enter your username." }]}
-              >
-                <Input disabled={!isEditing} prefix={<UserOutlined />} />
-              </Form.Item>
-              <Form.Item
                 label="First name"
                 name="fname"
                 rules={[{ required: true, message: "Enter your first name." }]}
@@ -261,6 +255,13 @@ export default function Profile() {
                 rules={[{ required: true, message: "Enter your last name." }]}
               >
                 <Input disabled={!isEditing} />
+              </Form.Item>
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: "Enter your username." }]}
+              >
+                <Input disabled={!isEditing} prefix={<UserOutlined />} />
               </Form.Item>
               <Form.Item
                 label="Email address"
@@ -285,7 +286,19 @@ export default function Profile() {
                   <Select.Option value="Organizer">Organizer</Select.Option>
                 </Select>
               </Form.Item>
-              <Form.Item label="Bio" name="bio">
+              <Form.Item
+                label="Email visibility"
+                name="emailPublic"
+                valuePropName="checked"
+                extra="Allow other users to see your email on your profile card."
+              >
+                <Switch
+                  disabled={!isEditing}
+                  checkedChildren="Public"
+                  unCheckedChildren="Private"
+                />
+              </Form.Item>
+              <Form.Item className="profile-bio-field" label="Bio" name="bio">
                 <Input.TextArea
                   rows={3}
                   disabled={!isEditing}

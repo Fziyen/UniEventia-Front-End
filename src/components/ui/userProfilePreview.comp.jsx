@@ -31,7 +31,14 @@ export default function UserProfilePreview({ user, children }) {
     if (!user) return;
 
     setSelectedUser(user);
-    if (user.username && user.createdAt && user.role) return;
+    if (
+      user.username &&
+      user.createdAt &&
+      user.role &&
+      Object.prototype.hasOwnProperty.call(user, "email")
+    ) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -111,9 +118,15 @@ export default function UserProfilePreview({ user, children }) {
                 >
                   {selectedUser.role || "Participant"}
                 </Tag>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Email hidden for privacy
-                </Text>
+                {selectedUser.emailPublic && selectedUser.email ? (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {selectedUser.email}
+                  </Text>
+                ) : (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Email hidden for privacy
+                  </Text>
+                )}
               </div>
               {selectedUser.bio ? (
                 <div
