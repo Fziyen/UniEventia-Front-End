@@ -4,6 +4,7 @@ import {
   EnvironmentOutlined,
   SearchOutlined,
   TeamOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -54,10 +55,13 @@ export default function Events({ view = "upcoming" }) {
   const fetchEvents = async () => {
     try {
       const response = await axios.get(`${API_URL}/events`);
-      setEvents(response.data || []);
+      const nextEvents = response.data || [];
+      setEvents(nextEvents);
+      return nextEvents;
     } catch (error) {
       console.error("Failed to load events:", error);
       message.error("Failed to load events.");
+      return [];
     }
   };
 
@@ -89,6 +93,7 @@ export default function Events({ view = "upcoming" }) {
   const participantCount = selectedEvent?.participants?.length || 0;
   const capacity = selectedEvent?.maxParticipants || 50;
   const isParticipant = participationState === "joined";
+  const currentUserId = currentUser?._id || currentUser?.id;
 
   const handleParticipate = async () => {
     try {
@@ -126,7 +131,10 @@ export default function Events({ view = "upcoming" }) {
       );
       commentForm.resetFields();
       message.success("Comment added.");
-      await fetchEvents();
+      const nextEvents = await fetchEvents();
+      setSelectedEvent(
+        nextEvents.find((event) => event._id === selectedEvent._id) || null,
+      );
     } catch (error) {
       if (error.response?.status === 404) {
         message.error("This event no longer exists or has been deleted.");
@@ -151,7 +159,10 @@ export default function Events({ view = "upcoming" }) {
       );
       reviewForm.resetFields();
       message.success("Review submitted.");
-      await fetchEvents();
+      const nextEvents = await fetchEvents();
+      setSelectedEvent(
+        nextEvents.find((event) => event._id === selectedEvent._id) || null,
+      );
     } catch (error) {
       if (error.response?.status === 404) {
         message.error("This event no longer exists or has been deleted.");
@@ -162,6 +173,28 @@ export default function Events({ view = "upcoming" }) {
           error.response?.data?.message || "Could not submit review.",
         );
       }
+    }
+  };
+
+  const deleteEntry = async (entry, type) => {
+    const endpoint = type === "comment" ? "comments" : "reviews";
+    const entryLabel = type === "comment" ? "Comment" : "Review";
+    try {
+      await axios.delete(
+        `${API_URL}/events/${selectedEvent._id}/${endpoint}/${entry._id}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        },
+      );
+      const nextEvents = await fetchEvents();
+      setSelectedEvent(
+        nextEvents.find((event) => event._id === selectedEvent._id) || null,
+      );
+      message.success(`${entryLabel} deleted.`);
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || `${entryLabel} could not be deleted.`,
+      );
     }
   };
 
@@ -245,6 +278,24 @@ export default function Events({ view = "upcoming" }) {
               />
               <Title level={4}>{selectedEvent.title}</Title>
               <Text>{selectedEvent.description}</Text>
+              <div className="event-organizer">
+                <Text type="secondary">Organized by</Text>
+                <UserProfilePreview user={selectedEvent.organizer}>
+                  <span className="event-organizer-link">
+                    <Avatar
+                      size={34}
+                      src={getMediaUrl(
+                        selectedEvent.organizer?.profilePicture,
+                        "profile",
+                      )}
+                      alt={`${selectedEvent.organizer?.fname || "Event organizer"}`}
+                    />
+                    <strong>
+                      {`${selectedEvent.organizer?.fname || "Event organizer"} ${selectedEvent.organizer?.lname || ""}`.trim()}
+                    </strong>
+                  </span>
+                </UserProfilePreview>
+              </div>
               <p>
                 <CalendarOutlined />{" "}
                 {formatEventDateRange(selectedEvent, { long: true })}
@@ -280,7 +331,25 @@ export default function Events({ view = "upcoming" }) {
                     dataSource={selectedEvent.comments || []}
                     locale={{ emptyText: "No comments yet." }}
                     renderItem={(comment) => (
-                      <List.Item>
+                      <List.Item
+                        actions={
+                          String(comment.user?._id) === String(currentUserId)
+                            ? [
+                                <Button
+                                  type="text"
+                                  key={`delete-comment-${comment._id}`}
+                                  danger
+                                  icon={<DeleteOutlined />}
+                                  aria-label="Delete your comment"
+                                  title="Delete your comment"
+                                  onClick={() =>
+                                    deleteEntry(comment, "comment")
+                                  }
+                                />,
+                              ]
+                            : undefined
+                        }
+                      >
                         <List.Item.Meta
                           avatar={
                             <UserProfilePreview user={comment.user}>
@@ -328,7 +397,23 @@ export default function Events({ view = "upcoming" }) {
                     dataSource={selectedEvent.reviews || []}
                     locale={{ emptyText: "No reviews yet." }}
                     renderItem={(review) => (
-                      <List.Item>
+                      <List.Item
+                        actions={
+                          String(review.user?._id) === String(currentUserId)
+                            ? [
+                                <Button
+                                  type="text"
+                                  key={`delete-review-${review._id}`}
+                                  danger
+                                  icon={<DeleteOutlined />}
+                                  aria-label="Delete your review"
+                                  title="Delete your review"
+                                  onClick={() => deleteEntry(review, "review")}
+                                />,
+                              ]
+                            : undefined
+                        }
+                      >
                         <List.Item.Meta
                           avatar={
                             <UserProfilePreview user={review.user}>

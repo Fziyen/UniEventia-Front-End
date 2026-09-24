@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { message } from "antd";
 import { Button, Card, Input } from "../ui/primitives";
+import { useAuth } from "../../authContext";
 import { useRecaptcha } from "./recaptcha";
 import "../../Styles/Auth.styles.css";
 
@@ -29,6 +30,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { getToken, unavailable: recaptchaUnavailable } =
     useRecaptcha("register");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const passwordChecks = useMemo(() => {
@@ -74,6 +76,7 @@ export default function Signup() {
       if (token && user) {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+        login(user);
       }
 
       message.success(response.data.message || "Registration successful!");

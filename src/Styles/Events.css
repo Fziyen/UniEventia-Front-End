@@ -57,6 +57,22 @@
   object-fit: cover;
   width: 100%;
 }
+.event-organizer {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  margin: 1rem 0;
+}
+.event-organizer-link {
+  align-items: center;
+  color: hsl(var(--foreground));
+  display: inline-flex;
+  gap: 0.55rem;
+}
+.event-organizer-link:hover {
+  color: hsl(var(--primary));
+}
 .event-conversation {
   border-left: 1px solid #f0f0f0;
   padding-left: 1.5rem;

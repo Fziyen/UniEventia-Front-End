@@ -206,7 +206,10 @@
   color: hsl(var(--muted-foreground));
   font-size: 0.7rem;
 }
-.mobile-menu-button {
+.navigation-toggle {
+  display: inline-flex;
+}
+.mobile-navigation-icon {
   display: none;
 }
 .workspace-content {
@@ -392,10 +395,10 @@
   .app-header {
     padding: 0 1rem;
   }
-  .desktop-collapse {
+  .desktop-navigation-icon {
     display: none;
   }
-  .mobile-menu-button {
+  .mobile-navigation-icon {
     display: inline-flex;
   }
   .mobile-menu-backdrop {

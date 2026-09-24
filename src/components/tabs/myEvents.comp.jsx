@@ -146,9 +146,8 @@ export default function MyEvents() {
             headers: { Authorization: `Bearer ${token}` },
           });
           message.success("You have withdrawn from this event.");
-          // Refresh events list
-          setEvents((prevEvents) =>
-            prevEvents.filter((event) => event._id !== eventId),
+          setEvents((previousEvents) =>
+            previousEvents.filter((event) => event._id !== eventId),
           );
           setSelectedEvent(null);
         } catch (error) {
@@ -239,6 +238,24 @@ export default function MyEvents() {
               />
               <Title level={4}>{selectedEvent.title}</Title>
               <Text>{selectedEvent.description}</Text>
+              <div className="event-organizer">
+                <Text type="secondary">Organized by</Text>
+                <UserProfilePreview user={selectedEvent.organizer}>
+                  <span className="event-organizer-link">
+                    <Avatar
+                      size={34}
+                      src={getMediaUrl(
+                        selectedEvent.organizer?.profilePicture,
+                        "profile",
+                      )}
+                      alt={`${selectedEvent.organizer?.fname || "Event organizer"}`}
+                    />
+                    <strong>
+                      {`${selectedEvent.organizer?.fname || "Event organizer"} ${selectedEvent.organizer?.lname || ""}`.trim()}
+                    </strong>
+                  </span>
+                </UserProfilePreview>
+              </div>
               <p>
                 <CalendarOutlined />{" "}
                 {formatEventDateRange(selectedEvent, { long: true })}

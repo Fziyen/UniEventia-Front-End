@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../authContext";
 import { Avatar, Button, Card, Separator } from "../ui/primitives";
 import { getMediaUrl, API_URL } from "../../api";
 import "../../Styles/Shell.styles.css";
@@ -39,14 +40,28 @@ const participantNavigation = [
 export default function AppShell({ role, renderPage }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState("Events");
+  const [currentPage, setCurrentPage] = useState(
+    () => localStorage.getItem("activePage") || "Events",
+  );
   const [showLogout, setShowLogout] = useState(false);
-  const [user, setUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const activeRole = user?.role || role;
   const isOrganizer = activeRole === "Organizer";
   const navigation = isOrganizer ? organizerNavigation : participantNavigation;
+
+  useEffect(() => {
+    const availablePages = new Set([
+      ...navigation.map((item) => item.key),
+      "Profile",
+    ]);
+
+    if (!availablePages.has(currentPage)) {
+      setCurrentPage("Events");
+      localStorage.setItem("activePage", "Events");
+    }
+  }, [currentPage, navigation]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -56,9 +71,7 @@ export default function AppShell({ role, renderPage }) {
       return;
     }
     try {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-
+      JSON.parse(storedUser);
       const expectedPath = "/Dashboard";
 
       if (window.location.pathname !== expectedPath) {
@@ -108,6 +121,7 @@ export default function AppShell({ role, renderPage }) {
 
   const selectPage = (page) => {
     setCurrentPage(page);
+    localStorage.setItem("activePage", page);
     setMobileMenuOpen(false);
   };
 
@@ -145,7 +159,7 @@ export default function AppShell({ role, renderPage }) {
             </button>
           ))}
         </nav>
-        {!collapsed && (
+        {/*   {!collapsed && (
           <div className="sidebar-context">
             <span className="sidebar-context-icon">
               <ShieldCheck size={15} />
@@ -161,7 +175,7 @@ export default function AppShell({ role, renderPage }) {
               </span>
             </div>
           </div>
-        )}
+        )} */}
         <div className="sidebar-bottom">
           <Separator />
           <button
@@ -189,14 +203,23 @@ export default function AppShell({ role, renderPage }) {
             <Button
               variant="ghost"
               size="icon"
-              className="mobile-menu-button"
-              onClick={() => setMobileMenuOpen((value) => !value)}
-              aria-expanded={mobileMenuOpen}
-              aria-label={
-                mobileMenuOpen ? "Close navigation" : "Open navigation"
-              }
+              className="navigation-toggle"
+              onClick={() => {
+                if (window.innerWidth <= 760) {
+                  setMobileMenuOpen((value) => !value);
+                } else {
+                  setCollapsed((value) => !value);
+                }
+              }}
+              aria-expanded={mobileMenuOpen || collapsed}
+              aria-label="Toggle navigation"
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              <span className="desktop-navigation-icon">
+                <PanelLeft size={20} />
+              </span>
+              <span className="mobile-navigation-icon">
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </span>
             </Button>
             <div className="breadcrumb">
               <span>Workspace</span>
@@ -207,15 +230,6 @@ export default function AppShell({ role, renderPage }) {
             </div>
           </div>
           <div className="header-actions">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="desktop-collapse"
-              onClick={() => setCollapsed((value) => !value)}
-              aria-label="Collapse sidebar"
-            >
-              <PanelLeft size={18} />
-            </Button>
             <div
               className="header-user"
               role="button"
@@ -223,7 +237,7 @@ export default function AppShell({ role, renderPage }) {
               onClick={() => selectPage("Profile")}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
-                  setCurrentPage("Profile");
+                  selectPage("Profile");
                 }
               }}
               style={{ cursor: "pointer" }}
@@ -234,7 +248,7 @@ export default function AppShell({ role, renderPage }) {
               />
               <div className="header-user-copy">
                 <strong>{displayName || "Member"}</strong>
-                <span>{role}</span>
+                <span>{activeRole}</span>
               </div>
             </div>
           </div>

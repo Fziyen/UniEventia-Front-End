@@ -26,6 +26,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL, getMediaUrl } from "../../api";
 import { compressImage } from "../../lib/compressImage";
+import { useAuth } from "../../authContext";
 import "../../Styles/Profile.css";
 
 const getStoredUser = () => {
@@ -44,6 +45,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const { updateUser } = useAuth();
   const navigate = useNavigate();
 
   const displayName = useMemo(
@@ -92,6 +94,7 @@ export default function Profile() {
       setUser(response.data);
       form.setFieldsValue(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
+      updateUser(response.data);
       setIsEditing(false);
 
       const nextPath = "/Dashboard";
@@ -130,6 +133,7 @@ export default function Profile() {
       );
       setUser(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
+      updateUser(response.data);
       setProfileFile(null);
       message.success("Profile photo updated.");
     } catch (error) {

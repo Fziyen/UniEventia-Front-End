@@ -11,6 +11,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { message } from "antd";
 import { Button, Card, Input } from "../ui/primitives";
+import { useAuth } from "../../authContext";
 import { useRecaptcha } from "./recaptcha";
 import "../../Styles/Auth.styles.css";
 
@@ -18,6 +19,7 @@ export default function Login() {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const { getToken, unavailable: recaptchaUnavailable } = useRecaptcha("login");
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -62,6 +64,7 @@ export default function Login() {
       if (!token || !user) throw new Error("Invalid authentication response");
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      login(user);
       message.success("Logged in successfully!");
       navigate("/Dashboard", { replace: true });
     } catch (error) {

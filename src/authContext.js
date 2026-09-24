@@ -4,11 +4,18 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
-    isAuthenticated: false,
-    user: null,
+    isAuthenticated: Boolean(localStorage.getItem("token")),
+    user: (() => {
+      try {
+        return JSON.parse(localStorage.getItem("user") || "null");
+      } catch {
+        return null;
+      }
+    })(),
   });
 
   const login = (user) => {
+    localStorage.setItem("user", JSON.stringify(user));
     setAuthState({
       isAuthenticated: true,
       user,
@@ -22,8 +29,13 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateUser = (user) => {
+    localStorage.setItem("user", JSON.stringify(user));
+    setAuthState((current) => ({ ...current, user }));
+  };
+
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
