@@ -13,6 +13,7 @@ import { message } from "antd";
 import { Button, Card, Input } from "../ui/primitives";
 import { useAuth } from "../../authContext";
 import { useRecaptcha } from "./recaptcha";
+import { API_URL } from "../../api";
 import "../../Styles/Auth.styles.css";
 
 export default function Login() {
@@ -56,10 +57,10 @@ export default function Login() {
     }
     try {
       const recaptchaValue = await getToken();
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5030/api"}/auth/login`,
-        { ...form, recaptcha: recaptchaValue },
-      );
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        ...form,
+        recaptcha: recaptchaValue,
+      });
       const { token, user } = response.data || {};
       if (!token || !user) throw new Error("Invalid authentication response");
       localStorage.setItem("token", token);

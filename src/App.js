@@ -4,7 +4,6 @@ import Login from "./components/auth/login.comp.jsx";
 import Signup from "./components/auth/signup.comp.jsx";
 import Dashboard from "./components/dashboard.comp.jsx";
 import ProtectedRoute from "./components/protectedRoute.comp.jsx";
-import "./App.css";
 
 function App() {
   return (

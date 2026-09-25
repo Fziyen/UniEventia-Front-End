@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
-import { ThemeProvider } from "./themeContext";
+import { AuthProvider } from "./authContext";
 
 window.matchMedia =
   window.matchMedia ||
@@ -33,11 +33,11 @@ describe("App routing", () => {
 
   it("redirects unauthenticated users away from protected layouts", () => {
     render(
-      <ThemeProvider>
+      <AuthProvider>
         <MemoryRouter initialEntries={["/organizer-layout"]}>
           <App />
         </MemoryRouter>
-      </ThemeProvider>,
+      </AuthProvider>,
     );
 
     expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
