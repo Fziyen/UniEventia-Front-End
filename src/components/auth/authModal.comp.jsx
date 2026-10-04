@@ -54,7 +54,8 @@ export default function AuthModal() {
       destroyOnClose
     >
       {authDialog && <>
-        {authDialog.reason && <p className="auth-reason">Log in or create an account to {authDialog.reason}.</p>}
+        {authDialog.sessionExpired && <p className="auth-reason" role="alert">Your session has expired or is no longer valid. Please log in again to continue.</p>}
+        {!authDialog.sessionExpired && authDialog.reason && <p className="auth-reason">Log in or create an account to {authDialog.reason}.</p>}
         {authDialog.mode === "register" ? (
           <Signup onSuccess={complete} onSwitch={() => switchMode("login")} busy={busy} setBusy={setBusy} />
         ) : (

@@ -1,3 +1,5 @@
+import { act } from "react";
+import { expireSession } from "./session";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
@@ -189,5 +191,33 @@ describe("Authentication popup", () => {
     axios.post.mockResolvedValueOnce({ data: { token: "session", user: { _id: "1", role: "Participant" } } });
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Log in", exact: true }));
     await waitFor(() => expect(localStorage.getItem("token")).toBe("session"));
+  });
+});
+
+describe("Session recovery", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.clearAllMocks();
+    axios.get.mockResolvedValue({ data: [] });
+  });
+  it("opens the login prompt on session rejection and restores access after login", async () => {
+    const user = { _id: "1", fname: "Ada", role: "Participant" };
+    localStorage.setItem("token", "rejected-session");
+    localStorage.setItem("user", JSON.stringify(user));
+    openApp();
+    act(() => expireSession("rejected-session"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Please log in again to continue");
+    expect(localStorage.getItem("token")).toBeNull();
+    expect(screen.getByRole("button", { name: "Log in / Register" })).toBeInTheDocument();
+    axios.post.mockResolvedValueOnce({ data: { token: "fresh-session", user } });
+    fireEvent.change(screen.getByLabelText("Username or email address"), { target: { value: "ada" } });
+    fireEvent.change(screen.getByLabelText("Password", { exact: true }), { target: { value: "Password123" } });
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Log in", exact: true }));
+    await waitFor(() => expect(localStorage.getItem("token")).toBe("fresh-session"));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
+    act(() => expireSession("rejected-session"));
+    expect(localStorage.getItem("token")).toBe("fresh-session");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

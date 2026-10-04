@@ -43,7 +43,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { updateUser } = useAuth();
+  const { updateUser, logout } = useAuth();
   const navigate = useNavigate();
 
   const displayName = useMemo(
@@ -187,8 +187,7 @@ export default function Profile() {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          logout();
           message.success("Your account has been deleted.");
           navigate("/login", { replace: true });
         } catch (error) {

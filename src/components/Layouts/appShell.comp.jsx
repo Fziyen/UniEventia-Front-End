@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Bell,
   CalendarDays,
@@ -70,16 +71,15 @@ export default function AppShell({ role, renderPage }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token || isGuest) return;
+    if (!token || isGuest) { setUnreadNotifications(0); return; }
 
     const fetchUnreadNotifications = async () => {
       try {
-        const response = await fetch(`${API_URL}/notifications/unread-count`, {
+        const response = await axios.get(`${API_URL}/notifications/unread-count`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!response.ok) return;
-        const data = await response.json();
-        setUnreadNotifications(Number(data?.unread || 0));
+        const data = response.data;
+        if (localStorage.getItem("token") === token) setUnreadNotifications(Number(data?.unread || 0));
       } catch (error) {
         console.error("Failed to fetch unread notification count:", error);
       }
