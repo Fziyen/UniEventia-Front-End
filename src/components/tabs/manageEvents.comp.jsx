@@ -1,3 +1,4 @@
+import { LoadingContent, LazyCard } from "../ui/loading.comp";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
@@ -17,6 +18,7 @@ import {
   TimePicker,
   Upload,
   InputNumber,
+  Select,
 } from "antd";
 import {
   SearchOutlined,
@@ -29,6 +31,7 @@ import moment from "moment";
 import { getMediaUrl, API_URL } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
 import { compressImage } from "../../lib/compressImage";
+import EventDetails from "../ui/eventDetails.comp";
 import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
@@ -36,7 +39,11 @@ const { Meta } = Card;
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
+const hasEnded = event => new Date(event?.endDate).getTime() <= Date.now();
+
 const ManageEvents = () => {
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [events, setEvents] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -73,8 +80,12 @@ const ManageEvents = () => {
   }, []);
 
   const fetchEvents = async () => {
+    setLoading(true);
+    setLoadError(false);
     const token = localStorage.getItem("token");
     if (!token) {
+      setLoading(false);
+      setLoadError(true);
       message.error("Please log in again to continue.");
       return;
     }
@@ -89,7 +100,10 @@ const ManageEvents = () => {
       setFilteredEvents(sortedEvents);
     } catch (err) {
       console.error("Error fetching events:", err);
+      setLoadError(true);
       message.error("Failed to fetch events");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,18 +147,17 @@ const ManageEvents = () => {
   };
 
   const handleRemoveParticipant = async (participantId) => {
+    if (hasEnded(selectedEvent)) {
+      message.info("Participants cannot be removed after the event has ended.");
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
         `${API_URL}/events/${selectedEvent._id}/participants/${participantId}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      const updatedEvent = {
-        ...selectedEvent,
-        participants: selectedEvent.participants.filter(
-          (participant) => participant._id !== participantId,
-        ),
-      };
+      const { data: updatedEvent } = await axios.get(`${API_URL}/events/${selectedEvent._id}`, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedEvent(updatedEvent);
       setEvents((prev) =>
         prev.map((event) =>
@@ -159,11 +172,15 @@ const ManageEvents = () => {
       message.success("Participant removed successfully");
     } catch (err) {
       console.error("Error removing participant:", err);
-      message.error(err.response?.data || "Failed to remove participant");
+      message.error(err.response?.data?.message || "Failed to remove participant");
     }
   };
 
   const showEditModal = () => {
+    if (hasEnded(selectedEvent)) {
+      message.info("This event has ended and can no longer be edited.");
+      return;
+    }
     const startDate = moment(selectedEvent.startDate);
     const endDate = moment(selectedEvent.endDate);
 
@@ -172,14 +189,14 @@ const ManageEvents = () => {
       description: selectedEvent.description,
       dateRange: [startDate, endDate],
       startTime: startDate,
-      endTime:
-        endDate.hour() === 23 &&
-        endDate.minute() === 59 &&
-        endDate.second() === 59
-          ? null
-          : endDate,
+      endTime: endDate,
       location: selectedEvent.location,
       maxParticipants: selectedEvent.maxParticipants || 50,
+      language: selectedEvent.language || "",
+      wheelchairAccess: selectedEvent.wheelchairAccess || "unknown",
+      cost: selectedEvent.cost || "",
+      transport: selectedEvent.transport || "",
+      whatToBring: selectedEvent.whatToBring || "",
     });
     setIsEditModalVisible(true);
   };
@@ -190,6 +207,11 @@ const ManageEvents = () => {
   };
 
   const handleUpdateEvent = async (values) => {
+    if (hasEnded(selectedEvent)) {
+      message.info("This event has ended and can no longer be edited.");
+      handleEditCancel();
+      return;
+    }
     setIsUpdating(true);
     try {
       if (!values.dateRange || values.dateRange.length < 2) {
@@ -198,26 +220,13 @@ const ManageEvents = () => {
         return;
       }
 
+      if (!values.startTime || !values.endTime) {
+        message.error("Select both a start time and an end time.");
+        return;
+      }
       const [selectedStartDate, selectedEndDate] = values.dateRange;
-      let startDate = selectedStartDate.clone();
-
-      if (values.startTime) {
-        startDate = startDate
-          .hour(values.startTime.hour())
-          .minute(values.startTime.minute())
-          .second(0)
-          .millisecond(0);
-      }
-      let endDate = selectedEndDate.clone();
-      if (values.endTime) {
-        endDate = endDate
-          .hour(values.endTime.hour())
-          .minute(values.endTime.minute())
-          .second(0)
-          .millisecond(0);
-      } else {
-        endDate.endOf("day");
-      }
+      const startDate = selectedStartDate.clone().hour(values.startTime.hour()).minute(values.startTime.minute()).second(0).millisecond(0);
+      const endDate = selectedEndDate.clone().hour(values.endTime.hour()).minute(values.endTime.minute()).second(0).millisecond(0);
       if (!endDate.isAfter(startDate)) {
         message.error("End time must be after the start time.");
         setIsUpdating(false);
@@ -231,6 +240,8 @@ const ManageEvents = () => {
       formData.append("endDate", endDate.toISOString());
       formData.append("location", values.location);
       formData.append("maxParticipants", String(values.maxParticipants));
+
+      for (const key of ["language", "wheelchairAccess", "cost", "transport", "whatToBring"]) formData.append(key, values[key] || (key === "wheelchairAccess" ? "unknown" : ""));
 
       const image = values.coverImage?.[0]?.originFileObj;
       if (image) {
@@ -274,7 +285,7 @@ const ManageEvents = () => {
       handleEditCancel();
     } catch (error) {
       console.error("Failed to update event:", error);
-      message.error("Failed to update event. Please try again.");
+      message.error(error.response?.data?.message || "Failed to update event. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -292,6 +303,8 @@ const ManageEvents = () => {
         />
       </Space>
 
+      <LoadingContent waitForImages={false} loading={loading} label="Loading your events">
+      {loadError ? <div className="events-empty"><p>Failed to load your events.</p><Button onClick={fetchEvents}>Try again</Button></div> : <>
       <Row gutter={[12, 12]} style={{ marginBottom: 18 }}>
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
@@ -337,13 +350,14 @@ const ManageEvents = () => {
         <Row gutter={[16, 16]}>
           {filteredEvents.map((event) => (
             <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
+              <LazyCard label="Loading event">
               <Card
                 className="event-card"
                 hoverable
                 cover={
                   <img
                     className="event-card-image"
-                    alt={event.title}
+                    alt={`Cover for ${event.title || "this event"}`}
                     src={getMediaUrl(event.coverImage, "event")}
                   />
                 }
@@ -373,10 +387,13 @@ const ManageEvents = () => {
                   }
                 />
               </Card>
+              </LazyCard>
             </Col>
           ))}
         </Row>
       )}
+      </>}
+      </LoadingContent>
       {selectedEvent && (
         <Modal
           title={selectedEvent.title}
@@ -386,7 +403,7 @@ const ManageEvents = () => {
             <Button key="cancel" onClick={handleCancel}>
               Cancel
             </Button>,
-            <Button key="edit" type="primary" onClick={showEditModal}>
+            <Button key="edit" type="primary" onClick={showEditModal} disabled={hasEnded(selectedEvent)}>
               Edit Event
             </Button>,
             <Button key="delete" type="primary" danger onClick={handleDelete}>
@@ -394,13 +411,8 @@ const ManageEvents = () => {
             </Button>,
           ]}
         >
-          <p>{selectedEvent.description}</p>
-          <p>Date: {formatEventDateRange(selectedEvent, { long: true })}</p>
-          <p>Location: {selectedEvent.location}</p>
-          <p>
-            Participant capacity: {(selectedEvent.participants || []).length} /{" "}
-            {selectedEvent.maxParticipants || 50}
-          </p>
+          {hasEnded(selectedEvent) && <p className="event-ended-notice" role="status">This event has ended. Its details and participant list are read-only.</p>}
+          <EventDetails event={selectedEvent} />
           <h3>Participants</h3>
           {(selectedEvent.participants || []).length > 0 ? (
             <List
@@ -429,6 +441,7 @@ const ManageEvents = () => {
                         {participant.email}{" "}
                         <Button
                           danger
+                          disabled={hasEnded(selectedEvent)}
                           size="small"
                           onClick={() =>
                             handleRemoveParticipant(participant._id)
@@ -496,6 +509,7 @@ const ManageEvents = () => {
               key="save"
               type="primary"
               loading={isUpdating}
+              disabled={hasEnded(selectedEvent)}
               onClick={() => editForm.submit()}
             >
               Save Changes
@@ -574,14 +588,20 @@ const ManageEvents = () => {
                 placeholder="e.g. 50"
               />
             </Form.Item>
+            <h3>Accessibility and practical details</h3>
+            <Form.Item name="language" label="Language"><Input maxLength={100} /></Form.Item>
+            <Form.Item name="wheelchairAccess" label="Wheelchair access"><Select options={[{ value: "unknown", label: "Not specified" }, { value: "yes", label: "Accessible" }, { value: "partial", label: "Partially accessible" }, { value: "no", label: "Not accessible" }]} /></Form.Item>
+            <Form.Item name="cost" label="Cost"><Input maxLength={200} placeholder="e.g. Free, or €5 payable at the door" /></Form.Item>
+            <Form.Item name="transport" label="Transport"><Input.TextArea rows={3} maxLength={2000} /></Form.Item>
+            <Form.Item name="whatToBring" label="What to bring"><Input.TextArea rows={3} maxLength={2000} /></Form.Item>
             <Row gutter={16}>
               <Col xs={24} sm={12}>
-                <Form.Item name="startTime" label="Start time (optional)">
+                <Form.Item name="startTime" label="Start time" rules={[{ required: true, message: "Choose a start time." }]}>
                   <TimePicker format="HH:mm" style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item name="endTime" label="End time (optional)">
+                <Form.Item name="endTime" label="End time" rules={[{ required: true, message: "Choose an end time." }]}>
                   <TimePicker format="HH:mm" style={{ width: "100%" }} />
                 </Form.Item>
               </Col>

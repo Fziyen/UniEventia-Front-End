@@ -1,13 +1,54 @@
-<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="720" rx="36" fill="#EEF3FF"/>
-  <rect x="120" y="140" width="960" height="440" rx="28" fill="#D9E5FF"/>
-  <circle cx="395" cy="310" r="102" fill="#C3D7FF"/>
-  <path d="M201 490C252 420 337 365 422 365C507 365 592 420 643 490V537H201V490Z" fill="#B9CFFF"/>
-  <rect x="710" y="258" width="235" height="28" rx="14" fill="#B7C9F5"/>
-  <rect x="710" y="314" width="290" height="24" rx="12" fill="#D2DEF9"/>
-  <rect x="710" y="358" width="252" height="24" rx="12" fill="#D2DEF9"/>
-  <rect x="710" y="402" width="175" height="24" rx="12" fill="#D2DEF9"/>
-  <path d="M357 245L401 189L444 245H357Z" fill="#AFC4F1"/>
-  <rect x="442" y="182" width="86" height="12" rx="6" fill="#AFC4F1"/>
-  <rect x="442" y="205" width="116" height="12" rx="6" fill="#AFC4F1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">UniEventia default event cover</title>
+  <desc id="desc">An illustrated calendar and admission ticket in teal, mint, and warm cream.</desc>
+  <defs>
+    <linearGradient id="background" x1="100" y1="0" x2="1100" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F7EE"/>
+      <stop offset="1" stop-color="#DCEDE6"/>
+    </linearGradient>
+    <linearGradient id="calendar" x1="426" y1="210" x2="744" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F5F8F0"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#background)" d="M0 0h1200v720H0z"/>
+  <circle cx="600" cy="356" r="262" fill="#C9E3D7" fill-opacity=".6"/>
+  <circle cx="600" cy="356" r="220" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="2"/>
+  <path d="M-72 533C115 317 237 389 308 551s248 229 402 104 315-117 560 19" stroke="#A9CFC1" stroke-opacity=".45" stroke-width="2"/>
+  <path d="M-40 578C127 390 235 433 299 584s254 205 406 100 321-126 555 28" stroke="#A9CFC1" stroke-opacity=".45" stroke-width="2"/>
+  <path d="M903 87a108 108 0 0 1 108 108" stroke="#BAD9CD" stroke-width="28"/>
+  <path d="M917 87a94 94 0 0 1 94 94" stroke="#F5F7EE" stroke-width="3"/>
+  <circle cx="218" cy="178" r="10" fill="#D5A852"/>
+  <circle cx="950" cy="528" r="7" fill="#59988A"/>
+  <path d="M291 406v28m-14-14h28" stroke="#529386" stroke-width="5" stroke-linecap="round"/>
+  <path d="m837 245 8-19 8 19 19 8-19 8-8 19-8-19-19-8 19-8Z" fill="#D5A852"/>
+  <ellipse cx="604" cy="550" rx="206" ry="23" fill="#427E6E" fill-opacity=".1"/>
+  <!-- A small ticket peeks out from behind the calendar. -->
+  <g transform="rotate(12 689 397)">
+    <path d="M588 250h210a18 18 0 0 1 18 18v103a24 24 0 0 0 0 48v103a18 18 0 0 1-18 18H588a18 18 0 0 1-18-18V419a24 24 0 0 0 0-48V268a18 18 0 0 1 18-18Z" fill="#E6BD70"/>
+    <path d="M749 276v242" stroke="#A87729" stroke-opacity=".45" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 10"/>
+    <path d="M777 304v47m0 91v47" stroke="#FFF5DD" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <!-- Broad shapes remain legible when the cover is cropped into a card. -->
+  <g transform="rotate(-7 571 356)">
+    <rect x="395" y="206" width="344" height="322" rx="27" fill="#245E51" fill-opacity=".12"/>
+    <rect x="395" y="192" width="344" height="322" rx="27" fill="url(#calendar)"/>
+    <path d="M422 192h290a27 27 0 0 1 27 27v66H395v-66a27 27 0 0 1 27-27Z" fill="#237E70"/>
+    <path d="M467 176v45m200-45v45" stroke="#164E45" stroke-width="17" stroke-linecap="round"/>
+    <path d="M467 176v35m200-35v35" stroke="#7DB4A1" stroke-width="8" stroke-linecap="round"/>
+    <path d="M442 252h77" stroke="#D9EDE4" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="688" cy="251" r="5" fill="#B5D9CB"/>
+    <g fill="#D6E8DF">
+      <rect x="439" y="324" width="46" height="40" rx="10"/>
+      <rect x="508" y="324" width="46" height="40" rx="10"/>
+      <rect x="577" y="324" width="46" height="40" rx="10"/>
+      <rect x="646" y="324" width="46" height="40" rx="10"/>
+      <rect x="439" y="389" width="46" height="40" rx="10"/>
+      <rect x="508" y="389" width="46" height="40" rx="10"/>
+      <rect x="646" y="389" width="46" height="40" rx="10"/>
+    </g>
+    <rect x="569" y="378" width="62" height="62" rx="19" fill="#237E70"/>
+    <path d="m584 408 11 11 21-24" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M440 470h90m17 0h36" stroke="#B7D2C5" stroke-width="6" stroke-linecap="round"/>
+  </g>
 </svg>

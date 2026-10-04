@@ -48,7 +48,7 @@ export function useRecaptcha(action) {
       })
       .catch((error) => {
         setUnavailable(true);
-        throw error;
+        return null;
       });
 
     return () => {
@@ -62,6 +62,7 @@ export function useRecaptcha(action) {
     }
 
     const captcha = await scriptPromise.current;
+    if (!captcha) throw new Error("Google reCAPTCHA is unavailable. Please refresh and try again.");
     await new Promise((resolve) => captcha.ready(resolve));
     return captcha.execute(siteKey, { action });
   };

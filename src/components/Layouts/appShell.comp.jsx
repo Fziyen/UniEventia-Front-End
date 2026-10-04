@@ -11,10 +11,12 @@ import {
   Menu,
   PanelLeft,
   ShieldCheck,
+  LockKeyhole,
   Users,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ConfigProvider } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../authContext";
 import { Avatar, Button, Card, Separator } from "../ui/primitives";
 import { getMediaUrl, API_URL } from "../../api";
@@ -40,14 +42,17 @@ const participantNavigation = [
 export default function AppShell({ role, renderPage }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const compactSidebar = collapsed && !mobileMenuOpen;
   const [currentPage, setCurrentPage] = useState(
     () => localStorage.getItem("activePage") || "Events",
   );
   const [showLogout, setShowLogout] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const { user } = useAuth();
+  const { user, isAuthenticated, requireAuth, logout: endSession } = useAuth();
+  const isGuest = !isAuthenticated;
+  const visiblePage = isGuest && !["Events", "Past Events"].includes(currentPage) ? "Events" : currentPage;
   const navigate = useNavigate();
-  const activeRole = user?.role || role;
+  const activeRole = isGuest ? "Guest" : user?.role || role;
   const isOrganizer = activeRole === "Organizer";
   const navigation = isOrganizer ? organizerNavigation : participantNavigation;
 
@@ -65,27 +70,7 @@ export default function AppShell({ role, renderPage }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (!token || !storedUser) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    try {
-      JSON.parse(storedUser);
-      const expectedPath = "/Dashboard";
-
-      if (window.location.pathname !== expectedPath) {
-        navigate(expectedPath, { replace: true });
-      }
-    } catch (error) {
-      localStorage.removeItem("user");
-      navigate("/login", { replace: true });
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token || isGuest) return;
 
     const fetchUnreadNotifications = async () => {
       try {
@@ -101,11 +86,11 @@ export default function AppShell({ role, renderPage }) {
     };
 
     fetchUnreadNotifications();
-  }, [currentPage]);
+  }, [currentPage, isGuest]);
 
   const displayName = user
     ? `${user.fname || ""} ${user.lname || ""}`.trim()
-    : "Member";
+    : "Guest";
   const initials = displayName
     .split(" ")
     .map((part) => part[0])
@@ -114,85 +99,76 @@ export default function AppShell({ role, renderPage }) {
     .toUpperCase();
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login", { replace: true });
+    endSession();
+    navigate("/", { replace: true });
   };
 
   const selectPage = (page) => {
+    if (!["Events", "Past Events"].includes(page) && !requireAuth(page === "Users" ? "view the community" : `access ${page.toLowerCase()}`)) {
+      setMobileMenuOpen(false);
+      return;
+    }
     setCurrentPage(page);
     localStorage.setItem("activePage", page);
     setMobileMenuOpen(false);
   };
 
   return (
+    <ConfigProvider theme={{ token: { colorPrimary: "#30665e", colorText: "#262c32", colorBgContainer: "#ffffff", colorBorder: "#dfe3e6", borderRadius: 6, fontFamily: '"Avenir Next", sans-serif' } }}>
     <div className="app-shell">
       <aside
         className={`app-sidebar ${collapsed ? "is-collapsed" : ""} ${
           mobileMenuOpen ? "is-mobile-open" : ""
         }`}
       >
-        <div className="sidebar-brand">
+        <Link to="/" className="sidebar-brand" aria-label="UniEventia home">
           <span className="brand-mark">
             <CalendarDays size={20} />
           </span>
-          {!collapsed && (
+          {!compactSidebar && (
             <span>
               <strong>Uni</strong>Eventia
             </span>
           )}
-        </div>
+        </Link>
         <div className="sidebar-section-label">Workspace</div>
         <nav className="sidebar-nav" aria-label="Main navigation">
           {navigation.map(({ key, label, icon: Icon }) => (
             <button
-              className={`sidebar-link ${currentPage === key ? "is-active" : ""}`}
+              className={`sidebar-link ${visiblePage === key ? "is-active" : ""}`}
               key={key}
               onClick={() => selectPage(key)}
+              aria-label={label}
+              aria-current={visiblePage === key ? "page" : undefined}
               title={collapsed ? label : undefined}
             >
               <Icon size={19} />
-              {!collapsed && <span>{label}</span>}
-              {!collapsed &&
+              {!compactSidebar && <span>{label}</span>}
+              {!compactSidebar && isGuest && !["Events", "Past Events"].includes(key) && <LockKeyhole className="nav-lock" size={12} aria-hidden="true" />}
+              {!compactSidebar &&
                 key === "Notifications" &&
                 unreadNotifications > 0 && <span className="nav-dot" />}
             </button>
           ))}
         </nav>
-        {/*   {!collapsed && (
-          <div className="sidebar-context">
-            <span className="sidebar-context-icon">
-              <ShieldCheck size={15} />
-            </span>
-            <div>
-              <strong>
-                {isOrganizer ? "Organizer mode" : "Participant mode"}
-              </strong>
-              <span>
-                {isOrganizer
-                  ? "Shape the next gathering"
-                  : "Stay close to your community"}
-              </span>
-            </div>
-          </div>
-        )} */}
         <div className="sidebar-bottom">
           <Separator />
           <button
-            className={`sidebar-link ${currentPage === "Profile" ? "is-active" : ""}`}
+            className={`sidebar-link ${visiblePage === "Profile" ? "is-active" : ""}`}
             onClick={() => selectPage("Profile")}
+            aria-label="Profile"
             title={collapsed ? "Profile" : undefined}
           >
             <CircleUserRound size={19} />
-            {!collapsed && <span>Profile</span>}
+            {!compactSidebar && <span>Profile</span>}
           </button>
           <button
             className="sidebar-link sidebar-logout"
-            onClick={() => setShowLogout(true)}
-            title={collapsed ? "Log out" : undefined}
+            onClick={() => isGuest ? requireAuth("join UniEventia") : setShowLogout(true)}
+            title={collapsed ? (isGuest ? "Log in / Register" : "Log out") : undefined}
           >
             <LogOut size={19} />
-            {!collapsed && <span>Log out</span>}
+            {!compactSidebar && <span>{isGuest ? "Log in / Register" : "Log out"}</span>}
           </button>
         </div>
       </aside>
@@ -211,7 +187,7 @@ export default function AppShell({ role, renderPage }) {
                   setCollapsed((value) => !value);
                 }
               }}
-              aria-expanded={mobileMenuOpen || collapsed}
+              aria-expanded={mobileMenuOpen || !collapsed}
               aria-label="Toggle navigation"
             >
               <span className="desktop-navigation-icon">
@@ -225,7 +201,7 @@ export default function AppShell({ role, renderPage }) {
               <span>Workspace</span>
               <ChevronRight size={14} />
               <strong>
-                {currentPage === "Events" ? "Discover" : currentPage}
+                {visiblePage === "Events" ? "Discover" : visiblePage}
               </strong>
             </div>
           </div>
@@ -257,17 +233,13 @@ export default function AppShell({ role, renderPage }) {
           <div className="content-intro">
             <div>
               <p className="eyebrow">
-                <ShieldCheck size={14} />{" "}
-                {isOrganizer ? "Organizer workspace" : "Participant workspace"}
+                <ShieldCheck size={14} />
+                {isGuest ? "Explore as a guest" : isOrganizer ? "Organizer workspace" : "Participant workspace"}
               </p>
-              <h1>
-                {currentPage === "Events"
-                  ? "Find your next gathering"
-                  : currentPage}
-              </h1>
+              <h1>{visiblePage === "Events" ? "Find your next gathering" : visiblePage}</h1>
             </div>
           </div>
-          <Card className="page-panel">{renderPage(currentPage)}</Card>
+          <Card className="page-panel">{renderPage(visiblePage)}</Card>
         </section>
         <footer className="app-footer">
           <span>Demo app for demonstration purposes only.</span>
@@ -328,5 +300,6 @@ export default function AppShell({ role, renderPage }) {
         </div>
       )}
     </div>
+    </ConfigProvider>
   );
 }

@@ -1,176 +1,50 @@
-import React, { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  Mail,
-} from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import axios from "axios";
-import { message } from "antd";
-import { Button, Card, Input } from "../ui/primitives";
+import { Button, Input } from "antd";
 import { useAuth } from "../../authContext";
 import { useRecaptcha } from "./recaptcha";
 import { API_URL } from "../../api";
-import "../../Styles/Auth.styles.css";
 
-export default function Login() {
+export default function Login({ onSuccess, onSwitch, busy, setBusy }) {
   const [form, setForm] = useState({ identifier: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const { getToken, unavailable: recaptchaUnavailable } = useRecaptcha("login");
+  const [error, setError] = useState("");
+  const { getToken, unavailable } = useRecaptcha("login");
   const { login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  useEffect(() => {
-    if (location.pathname !== "/login") {
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (!token || !storedUser) {
-      return;
-    }
-
-    try {
-      const user = JSON.parse(storedUser);
-      if (!user?.role) {
-        return;
-      }
-
-      navigate("/Dashboard", { replace: true });
-    } catch (error) {
-      localStorage.removeItem("user");
-    }
-  }, [location.pathname, navigate]);
-
-  const onSubmit = async (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    if (recaptchaUnavailable) {
-      message.error(
-        "Google reCAPTCHA is unavailable. Please refresh and try again.",
-      );
-      return;
-    }
+    if (busy) return;
+    setError("");
+    setBusy(true);
     try {
-      const recaptchaValue = await getToken();
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        ...form,
-        recaptcha: recaptchaValue,
-      });
+      const recaptcha = await getToken();
+      const response = await axios.post(`${API_URL}/auth/login`, { ...form, identifier: form.identifier.trim(), recaptcha });
       const { token, user } = response.data || {};
-      if (!token || !user) throw new Error("Invalid authentication response");
+      if (!token || !user) throw new Error("Invalid authentication response. Please try again.");
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
       login(user);
-      message.success("Logged in successfully!");
-      navigate("/Dashboard", { replace: true });
-    } catch (error) {
-      console.error("Login failed:", error);
-      message.error(
-        error.response?.data?.message ||
-          (error.message?.includes("reCAPTCHA")
-            ? error.message
-            : "Invalid email or password. Please try again."),
-      );
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.message || (err.message?.includes("reCAPTCHA") ? err.message : "Could not log in. Check your details and try again."));
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <main className="auth-page">
-      <div className="auth-orbit auth-orbit-one" />
-      <div className="auth-orbit auth-orbit-two" />
-      <div className="auth-topbar">
-        <div className="auth-brand">
-          <span className="brand-mark">
-            <CalendarDays size={18} />
-          </span>
-          <strong>Uni</strong>Eventia
-        </div>
-      </div>
-      <div className="auth-layout">
-        <section className="auth-story">
-          <p className="eyebrow">Events with intention</p>
-          <h1>Events that matter.</h1>
-          <p>
-            Discover thoughtful gatherings, meet your people, and keep every
-            detail in one calm place.
-          </p>
-          <div className="story-line">
-            <span />
-            <span /> <span />
-          </div>
-        </section>
-        <Card className="auth-card">
-          <div className="auth-heading">
-            <p className="auth-kicker">Welcome back</p>
-            <h2>Sign in to your space</h2>
-            <p>Pick up where your next gathering begins.</p>
-          </div>
-          <form onSubmit={onSubmit} className="auth-form">
-            <label>
-              Username or email address
-              <div className="input-with-icon">
-                <Mail size={17} />
-                <Input
-                  type="text"
-                  value={form.identifier}
-                  onChange={(event) =>
-                    setForm({ ...form, identifier: event.target.value })
-                  }
-                  placeholder="Enter your username or email"
-                  required
-                  maxLength={254}
-                />
-              </div>
-            </label>
-            <label>
-              Password
-              <div className="input-with-icon password-input-wrap">
-                <LockKeyhole size={17} />
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                  placeholder="Enter your password"
-                  required
-                  maxLength={128}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </label>
-            <div className="captcha-wrap">
-              <span className="captcha-note">
-                Protected by Google reCAPTCHA
-              </span>
-            </div>
-            {recaptchaUnavailable && (
-              <p className="captcha-fallback" role="status">
-                Google reCAPTCHA could not load. Please refresh the page and try
-                again.
-              </p>
-            )}
-            <Button type="submit" className="auth-submit">
-              Continue <ArrowRight size={17} />
-            </Button>
-          </form>
-          <p className="auth-switch">
-            New to UniEventia? <Link to="/register">Create an account</Link>
-          </p>
-        </Card>
-      </div>
-    </main>
+    <div className="auth-flow">
+      <h2>Log in</h2>
+      <form className="auth-form" onSubmit={submit}>
+        <label htmlFor="login-identifier">Username or email address</label>
+        <Input id="login-identifier" autoFocus autoComplete="username" required maxLength={254} value={form.identifier} disabled={busy} onChange={(e) => setForm({ ...form, identifier: e.target.value })} />
+        <label htmlFor="login-password">Password</label>
+        <Input.Password id="login-password" autoComplete="current-password" required maxLength={128} value={form.password} disabled={busy} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        {error && <p className="auth-error" role="alert">{error}</p>}
+        {unavailable && <p className="auth-error" role="status">reCAPTCHA is unavailable. Please refresh and try again.</p>}
+        <Button type="primary" htmlType="submit" block loading={busy} disabled={unavailable}>Log in</Button>
+      </form>
+      <p className="auth-switch">New to UniEventia? <button onClick={onSwitch} disabled={busy}>Register</button></p>
+      <p className="auth-captcha">Protected by Google reCAPTCHA</p>
+    </div>
   );
 }

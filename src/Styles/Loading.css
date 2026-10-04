@@ -1,0 +1,38 @@
+.loading-boundary { position: relative; }
+.loading-content-pending { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+.loading-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.skeleton-layout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.skeleton-card { overflow: hidden; border: 1px solid hsl(var(--border, 210 12% 88%)); border-radius: 10px; background: hsl(var(--card, 0 0% 100%)); }
+.skeleton-body { padding: 20px; }
+.skeleton-block { position: relative; overflow: hidden; background: hsl(var(--muted, 210 14% 92%)); border-radius: 5px; }
+.skeleton-block::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, hsl(0 0% 100% / .5), transparent); transform: translateX(-100%); animation: skeleton-shimmer 1.6s ease-in-out infinite; }
+.skeleton-cover { height: 180px; border-radius: 0; }
+.skeleton-line { height: 12px; margin-bottom: 14px; width: 100%; }
+.skeleton-title { width: 75%; height: 20px; margin-bottom: 20px; }
+.skeleton-short { width: 65%; }
+.skeleton-meta { width: 80%; margin-top: 28px; }
+.skeleton-avatar { width: 84px; height: 84px; border-radius: 50%; margin-bottom: 20px; }
+.content-skeleton-users .skeleton-avatar { margin: 0 auto 24px; width: 96px; height: 96px; }
+.content-skeleton-list .skeleton-layout, .content-skeleton-profile .skeleton-layout { grid-template-columns: 1fr; }
+.content-skeleton-list .skeleton-body { padding-left: 80px; position: relative; }
+.content-skeleton-list .skeleton-avatar { position: absolute; left: 20px; top: 20px; width: 40px; height: 40px; }
+.content-skeleton-list .skeleton-title { width: 40%; }
+.content-skeleton-profile .skeleton-body { padding: 28px; }
+.skeleton-field { height: 180px; margin-top: 32px; }
+@keyframes skeleton-shimmer { to { transform: translateX(100%); } }
+@media (max-width: 1199px) { .skeleton-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .skeleton-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575px) { .skeleton-layout { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-block::after { animation: none; display: none; } }
+
+.content-skeleton-feed .skeleton-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.content-skeleton-feed .skeleton-cover { height: auto; aspect-ratio: 1.8; }
+@media (min-width: 1600px) { .content-skeleton-feed .skeleton-layout { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1150px) { .content-skeleton-feed .skeleton-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; } }
+@media (max-width: 560px) { .content-skeleton-feed .skeleton-layout { grid-template-columns: 1fr; } }
+
+/* A deferred card reserves its own place in the existing responsive grid. */
+.lazy-card { min-width: 0; height: 100%; }
+.lazy-card .content-skeleton .skeleton-layout { grid-template-columns: minmax(0, 1fr); }
+.lazy-card > .loading-boundary, .lazy-card > .loading-boundary > div:not(.content-skeleton) { height: 100%; }
+.lazy-card .dashboard-event-card { width: 100%; height: 100%; }

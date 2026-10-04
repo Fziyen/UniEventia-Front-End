@@ -1,22 +1,22 @@
 import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "./components/auth/login.comp.jsx";
-import Signup from "./components/auth/signup.comp.jsx";
+import { Route, Routes } from "react-router-dom";
+import AuthModal from "./components/auth/authModal.comp";
 import Dashboard from "./components/dashboard.comp.jsx";
 import ProtectedRoute from "./components/protectedRoute.comp.jsx";
 
+import Landing from "./components/landing.comp";
+
 function App() {
   return (
+    <>
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/register" element={<Landing />} />
+      <Route path="/login" element={<Landing />} />
       <Route
         path="/Dashboard"
         element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
+          <Dashboard />
         }
       />
       <Route
@@ -36,6 +36,8 @@ function App() {
         }
       />
     </Routes>
+    <AuthModal />
+    </>
   );
 }
 

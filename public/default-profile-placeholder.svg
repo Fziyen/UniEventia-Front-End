@@ -1,8 +1,20 @@
-<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="320" height="320" rx="28" fill="#E8EEF8"/>
-  <circle cx="160" cy="116" r="56" fill="#C7D6F3"/>
-  <path d="M88 254C104 214 131 194 160 194C189 194 216 214 232 254" fill="#C7D6F3"/>
-  <path d="M122 102C122 82.1177 138.118 66 158 66H162C181.882 66 198 82.1177 198 102V110C198 129.882 181.882 146 162 146H158C138.118 146 122 129.882 122 110V102Z" fill="#B2C4EA"/>
-  <circle cx="160" cy="118" r="48" fill="#D9E5FB"/>
-  <path d="M96 250C112 214.5 136.5 200 160 200C183.5 200 208 214.5 224 250" fill="#D9E5FB"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">UniEventia default profile picture</title>
+  <desc id="desc">A simple teal person silhouette on a soft mint background.</desc>
+  <defs>
+    <linearGradient id="background" x1="28" y1="16" x2="286" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF5EB"/>
+      <stop offset="1" stop-color="#CEE5D9"/>
+    </linearGradient>
+    <linearGradient id="person" x1="104" y1="94" x2="224" y2="289" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B9380"/>
+      <stop offset="1" stop-color="#226D60"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#background)" d="M0 0h320v320H0z"/>
+  <circle cx="160" cy="160" r="132" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2"/>
+  <circle cx="160" cy="158" r="104" fill="#EAF3E9" fill-opacity=".65"/>
+  <path d="M62 278c6-55 44-91 98-91s92 36 98 91v42H62v-42Z" fill="url(#person)"/>
+  <circle cx="160" cy="117" r="48" fill="url(#person)"/>
+  <path d="M131 202c8 8 18 12 29 12s21-4 29-12" stroke="#8DC4AF" stroke-width="5" stroke-linecap="round"/>
 </svg>

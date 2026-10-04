@@ -1,8 +1,8 @@
+import { ContentSkeleton } from "../ui/loading.comp";
 import React, { useEffect, useState } from "react";
 import {
   List,
   Avatar,
-  Spin,
   message,
   Empty,
   Button,
@@ -114,13 +114,7 @@ const Notifications = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "20%" }}>
-        <Spin tip="Loading..." />
-      </div>
-    );
-  }
+  if (loading) return <ContentSkeleton variant="list" label="Loading notifications" />;
 
   return (
     <div>

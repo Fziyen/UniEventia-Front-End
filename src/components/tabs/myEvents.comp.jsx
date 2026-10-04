@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { ContentSkeleton, LoadingContent, LazyCard } from "../ui/loading.comp";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   CalendarOutlined,
   DownloadOutlined,
   EnvironmentOutlined,
   DeleteOutlined,
-  TeamOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -15,7 +15,6 @@ import {
   List,
   Row,
   Col,
-  Spin,
   Typography,
   message,
   Modal,
@@ -24,6 +23,7 @@ import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import EventDetails from "../ui/eventDetails.comp";
 import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
 
@@ -86,40 +86,33 @@ export default function MyEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchMyEvents = async () => {
-      const storedUser = localStorage.getItem("user");
-      const user = storedUser ? JSON.parse(storedUser) : null;
+  const fetchMyEvents = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "null");
       const userId = user?._id || user?.id;
-
-      if (!userId) {
-        setError("We could not identify your account. Please sign in again.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await axios.get(`${API_URL}/events`);
-        const joinedEvents = (response.data || []).filter((event) =>
-          (event.participants || []).some(
-            (participant) =>
-              String(participant?._id || participant) === String(userId),
-          ),
-        );
-        setEvents(sortEventsByStart(joinedEvents));
-      } catch (requestError) {
-        console.error("Failed to load participating events:", requestError);
-        setError("Your participating events could not be loaded.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyEvents();
+      if (!userId) throw new Error("Sign in again to load your events.");
+      const response = await axios.get(`${API_URL}/events`);
+      const myEvents = (response.data || []).filter(event =>
+        (event.participants || []).some(person => String(person?._id || person) === String(userId)) ||
+        (event.waitlist || []).some(id => String(id) === String(userId)));
+      setEvents(sortEventsByStart(myEvents));
+      setSelectedEvent(current => current ? myEvents.find(event => event._id === current._id) || null : null);
+    } catch { setError("Your events could not be loaded. Please try again."); }
+    finally { setLoading(false); }
   }, []);
+  useEffect(() => {
+    fetchMyEvents();
+    window.addEventListener("focus", fetchMyEvents);
+    return () => window.removeEventListener("focus", fetchMyEvents);
+  }, [fetchMyEvents]);
 
+  const currentUserId = (() => { try { const user = JSON.parse(localStorage.getItem("user") || "null"); return user?._id || user?.id; } catch { return null; } })();
+  const isWaitlisted = (event) => (event.waitlist || []).some(id => String(id) === String(currentUserId));
+  const joinedEvents = events.filter(event => !isWaitlisted(event));
   const downloadCalendar = () => {
-    const content = buildCalendarFile(events);
+    const content = buildCalendarFile(joinedEvents);
     const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -133,8 +126,9 @@ export default function MyEvents() {
   };
 
   const handleCancelParticipation = async (eventId, eventTitle) => {
+    const waiting = isWaitlisted(events.find(event => event._id === eventId) || {});
     Modal.confirm({
-      title: "Cancel Participation",
+      title: waiting ? "Leave waitlist" : "Cancel Participation",
       content: `Are you sure you want to withdraw from "${eventTitle}"?`,
       okText: "Yes, withdraw",
       okType: "danger",
@@ -142,10 +136,10 @@ export default function MyEvents() {
       onOk: async () => {
         try {
           const token = localStorage.getItem("token");
-          await axios.delete(`${API_URL}/events/${eventId}/participate`, {
+          await axios.delete(`${API_URL}/events/${eventId}/${waiting ? "waitlist" : "participate"}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          message.success("You have withdrawn from this event.");
+          message.success(waiting ? "You left the waitlist." : "You have withdrawn from this event.");
           setEvents((previousEvents) =>
             previousEvents.filter((event) => event._id !== eventId),
           );
@@ -160,7 +154,7 @@ export default function MyEvents() {
     });
   };
 
-  if (loading) return <Spin />;
+  if (loading) return <ContentSkeleton label="Loading your events" />;
 
   return (
     <div className="my-events-page">
@@ -168,20 +162,21 @@ export default function MyEvents() {
         <div>
           <Title level={3}>My events</Title>
           <Text type="secondary">
-            Events you have joined, ready to add to your calendar.
+            Your confirmed events and waitlists. Only confirmed events are included in your calendar.
           </Text>
         </div>
+        <Button onClick={fetchMyEvents}>Refresh</Button>
         <Button
           type="primary"
           icon={<DownloadOutlined />}
           onClick={downloadCalendar}
-          disabled={!events.length}
+          disabled={!joinedEvents.length}
         >
           Download calendar
         </Button>
       </div>
 
-      {error && <Alert type="error" showIcon message={error} />}
+      {error && <Alert type="error" showIcon message={error} action={<Button onClick={fetchMyEvents}>Try again</Button>} />}
       {!error && !events.length && (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -192,6 +187,7 @@ export default function MyEvents() {
         <Row gutter={[16, 16]}>
           {events.map((event) => (
             <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
+              <LazyCard label="Loading event">
               <Card
                 className="event-card"
                 hoverable
@@ -199,7 +195,7 @@ export default function MyEvents() {
                 cover={
                   <img
                     className="event-card-image"
-                    alt={event.title}
+                    alt={`Cover for ${event.title || "this event"}`}
                     src={getMediaUrl(event.coverImage, "event")}
                   />
                 }
@@ -207,6 +203,7 @@ export default function MyEvents() {
                 <Title className="event-card-title" level={4}>
                   {event.title}
                 </Title>
+                {isWaitlisted(event) && <p><strong>Waitlisted · position {(event.waitlist || []).findIndex(id => String(id) === String(currentUserId)) + 1}</strong></p>}
                 <p className="event-card-description">{event.description}</p>
                 <Text className="event-card-info">
                   <CalendarOutlined /> {formatEventDateRange(event)}
@@ -216,6 +213,7 @@ export default function MyEvents() {
                   <EnvironmentOutlined /> {event.location}
                 </Text>
               </Card>
+              </LazyCard>
             </Col>
           ))}
         </Row>
@@ -229,44 +227,9 @@ export default function MyEvents() {
         width={820}
       >
         {selectedEvent && (
-          <div className="event-detail-grid">
-            <div>
-              <img
-                className="event-detail-image"
-                src={getMediaUrl(selectedEvent.coverImage, "event")}
-                alt={selectedEvent.title}
-              />
-              <Title level={4}>{selectedEvent.title}</Title>
-              <Text>{selectedEvent.description}</Text>
-              <div className="event-organizer">
-                <Text type="secondary">Organized by</Text>
-                <UserProfilePreview user={selectedEvent.organizer}>
-                  <span className="event-organizer-link">
-                    <Avatar
-                      size={34}
-                      src={getMediaUrl(
-                        selectedEvent.organizer?.profilePicture,
-                        "profile",
-                      )}
-                      alt={`${selectedEvent.organizer?.fname || "Event organizer"}`}
-                    />
-                    <strong>
-                      {`${selectedEvent.organizer?.fname || "Event organizer"} ${selectedEvent.organizer?.lname || ""}`.trim()}
-                    </strong>
-                  </span>
-                </UserProfilePreview>
-              </div>
-              <p>
-                <CalendarOutlined />{" "}
-                {formatEventDateRange(selectedEvent, { long: true })}
-              </p>
-              <p>
-                <EnvironmentOutlined /> {selectedEvent.location}
-              </p>
-              <p>
-                <TeamOutlined /> {selectedEvent.participants?.length || 0} /{" "}
-                {selectedEvent.maxParticipants || 50} participant spots
-              </p>
+          <LoadingContent variant="profile" label="Loading event details"><div className="event-detail-grid">
+            <EventDetails event={selectedEvent}>
+              {isWaitlisted(selectedEvent) && <p role="status">Waitlisted · position {(selectedEvent.waitlist || []).findIndex(id => String(id) === String(currentUserId)) + 1}. You will be registered automatically if a place opens before the event starts.</p>}
               <Button
                 danger
                 icon={<DeleteOutlined />}
@@ -277,9 +240,9 @@ export default function MyEvents() {
                   )
                 }
               >
-                Withdraw
+                {isWaitlisted(selectedEvent) ? "Leave waitlist" : "Withdraw"}
               </Button>
-            </div>
+            </EventDetails>
             <div className="event-conversation">
               <Title level={4}>What are people hoping to see?</Title>
               <List
@@ -310,7 +273,7 @@ export default function MyEvents() {
                 )}
               />
             </div>
-          </div>
+          </div></LoadingContent>
         )}
       </Modal>
     </div>

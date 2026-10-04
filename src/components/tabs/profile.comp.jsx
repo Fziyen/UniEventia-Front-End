@@ -1,13 +1,11 @@
+import { ContentSkeleton, LoadingContent } from "../ui/loading.comp";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  CheckCircleOutlined,
   CameraOutlined,
   DeleteOutlined,
   EditOutlined,
-  LockOutlined,
   MailOutlined,
   SaveOutlined,
-  SafetyCertificateOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import {
@@ -205,29 +203,31 @@ export default function Profile() {
   };
 
   if (isLoading)
-    return <div className="profile-loading">Loading your profile...</div>;
+    return <ContentSkeleton variant="profile" label="Loading your profile" />;
   if (!user) return null;
 
   return (
-    <div className="profile-page">
+    <LoadingContent variant="profile" label="Loading your profile"><div className={`profile-page${isEditing ? " is-editing" : ""}`}>
       <section className="profile-hero">
         <div className="profile-identity">
           <Avatar
             className="profile-avatar"
-            size={84}
+            alt={`Profile of ${displayName}`}
+            size={88}
             src={getMediaUrl(user.profilePicture, "profile")}
             icon={!user.profilePicture ? <UserOutlined /> : null}
           >
             {!user.profilePicture && initials}
           </Avatar>
-          <div>
+          <div className="profile-identity-copy">
             <h2>{displayName}</h2>
-            <p>{user.email}</p>
+            {user.username && <p>@{user.username}</p>}
             <span className="profile-role">{user.role}</span>
           </div>
         </div>
         <div className="profile-hero-actions">
           <Button
+            type="primary"
             icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
             onClick={() => (isEditing ? form.submit() : setIsEditing(true))}
             loading={isSaving}
@@ -242,10 +242,7 @@ export default function Profile() {
           className="profile-card"
           title={
             <div className="profile-card-title">
-              <strong>Personal details</strong>
-              <span>
-                Keep the information used across your workspace up to date.
-              </span>
+              <h3><UserOutlined aria-hidden="true" /> Personal details</h3>
             </div>
           }
         >
@@ -287,10 +284,7 @@ export default function Profile() {
                 name="role"
                 rules={[{ required: true, message: "Choose a role." }]}
               >
-                <Select
-                  disabled={!isEditing}
-                  prefix={<SafetyCertificateOutlined />}
-                >
+                <Select disabled={!isEditing}>
                   <Select.Option value="Participant">Participant</Select.Option>
                   <Select.Option value="Organizer">Organizer</Select.Option>
                 </Select>
@@ -299,7 +293,7 @@ export default function Profile() {
                 label="Email visibility"
                 name="emailPublic"
                 valuePropName="checked"
-                extra="Allow other users to see your email on your profile card."
+                extra="Show your email to other members."
               >
                 <Switch
                   disabled={!isEditing}
@@ -307,19 +301,15 @@ export default function Profile() {
                   unCheckedChildren="Private"
                 />
               </Form.Item>
-              <Form.Item className="profile-bio-field" label="Bio" name="bio">
+              <Form.Item className="profile-bio-field" label="About you" name="bio">
                 <Input.TextArea
                   rows={3}
                   disabled={!isEditing}
-                  placeholder="Tell us about yourself..."
+                  placeholder={isEditing ? "A little about you and what you enjoy." : "No bio added yet."}
                   maxLength={500}
                 />
               </Form.Item>
             </div>
-            <p className="profile-readonly-note">
-              Keep your contact details and workspace role aligned with your
-              current account usage.
-            </p>
             {isEditing && (
               <div className="profile-actions">
                 <Button onClick={cancelEditing}>Cancel</Button>
@@ -341,21 +331,22 @@ export default function Profile() {
             className="profile-card"
             title={
               <div className="profile-card-title">
-                <strong>Profile photo</strong>
-                <span>Use a clear image your community will recognize.</span>
+                <h3><CameraOutlined aria-hidden="true" /> Profile photo</h3>
               </div>
             }
           >
             <div className="profile-upload">
               <Avatar
-                size={58}
+                className="profile-photo-preview"
+                size={72}
+                alt={`Profile of ${displayName}`}
                 src={getMediaUrl(user.profilePicture, "profile")}
                 icon={!user.profilePicture ? <UserOutlined /> : null}
               >
                 {!user.profilePicture && initials}
               </Avatar>
               <div className="profile-upload-copy">
-                <strong>{profileFile?.name || "Choose a new photo"}</strong>
+                <strong>{profileFile?.name || "Make it yours"}</strong>
                 <span>JPG, PNG, or GIF up to 5 MB</span>
                 <Upload
                   beforeUpload={() => false}
@@ -366,7 +357,7 @@ export default function Profile() {
                     setProfileFile(fileList[0]?.originFileObj || null)
                   }
                 >
-                  <Button size="small" icon={<CameraOutlined />}>
+                  <Button icon={<CameraOutlined />} disabled={isUploading}>
                     Choose image
                   </Button>
                 </Upload>
@@ -378,7 +369,7 @@ export default function Profile() {
                 block
                 loading={isUploading}
                 onClick={handlePictureUpload}
-                style={{ marginTop: "1rem" }}
+                className="profile-upload-submit"
               >
                 Upload photo
               </Button>
@@ -386,48 +377,16 @@ export default function Profile() {
           </Card>
 
           <Card
-            className="profile-card"
-            title={
-              <div className="profile-card-title">
-                <strong>Account status</strong>
-                <span>A quick view of your account safeguards.</span>
-              </div>
-            }
-          >
-            <div className="profile-status-list">
-              <div className="profile-status-row">
-                <span className="profile-status-icon">
-                  <CheckCircleOutlined />
-                </span>
-                <div>
-                  <strong>Account active</strong>
-                  <span>You can access your workspace.</span>
-                </div>
-              </div>
-              <div className="profile-status-row">
-                <span className="profile-status-icon">
-                  <LockOutlined />
-                </span>
-                <div>
-                  <strong>Password protected</strong>
-                  <span>Credentials are securely stored.</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-          <Card
             className="profile-card danger-zone"
             title={
               <div className="profile-card-title danger-zone-title">
-                <strong>Danger zone</strong>
-                <span>Permanent account actions.</span>
+                <h3><DeleteOutlined aria-hidden="true" /> Account removal</h3>
               </div>
             }
           >
             <div className="danger-zone-content">
               <p>
-                Delete your account and remove all access to your UniEventia
-                workspace.
+                Permanently delete your profile and associated data. This cannot be undone.
               </p>
               <Button
                 danger
@@ -442,6 +401,6 @@ export default function Profile() {
           </Card>
         </div>
       </div>
-    </div>
+    </div></LoadingContent>
   );
 }

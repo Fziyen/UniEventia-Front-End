@@ -1,7 +1,10 @@
+import { LoadingContent } from "./loading.comp";
 import React, { useMemo, useState } from "react";
-import { Avatar, Modal, Spin, Tag, Typography, message } from "antd";
+import { Avatar, Modal, Tag, Typography, message } from "antd";
 import axios from "axios";
 import { API_URL, getMediaUrl } from "../../api";
+
+import { useAuth } from "../../authContext";
 
 const { Paragraph, Text } = Typography;
 
@@ -17,6 +20,7 @@ const formatJoinedDate = (dateValue) => {
 };
 
 export default function UserProfilePreview({ user, children }) {
+  const { requireAuth } = useAuth();
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,7 +32,7 @@ export default function UserProfilePreview({ user, children }) {
   );
 
   const openProfile = async () => {
-    if (!user) return;
+    if (!requireAuth("view member profiles") || !user) return;
 
     setSelectedUser(user);
     if (
@@ -92,7 +96,7 @@ export default function UserProfilePreview({ user, children }) {
       >
         {selectedUser && (
           <div style={{ padding: 24, textAlign: "center" }}>
-            <Spin spinning={isLoading}>
+            <LoadingContent loading={isLoading} variant="profile" label="Loading member profile">
               <Avatar
                 src={getMediaUrl(selectedUser.profilePicture, "profile")}
                 size={120}
@@ -153,7 +157,7 @@ export default function UserProfilePreview({ user, children }) {
                   No bio yet
                 </Text>
               )}
-            </Spin>
+            </LoadingContent>
           </div>
         )}
       </Modal>

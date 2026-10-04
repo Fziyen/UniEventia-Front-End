@@ -1,3 +1,4 @@
+import { ContentSkeleton, LoadingContent, LazyCard } from "../ui/loading.comp";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   CalendarOutlined,
@@ -8,16 +9,11 @@ import {
 } from "@ant-design/icons";
 import {
   Button,
-  Card,
-  Empty,
   Form,
   Input,
   List,
   Modal,
   Rate,
-  Row,
-  Col,
-  Space,
   Typography,
   message,
   Avatar,
@@ -26,42 +22,47 @@ import axios from "axios";
 import moment from "moment";
 import { API_URL, getMediaUrl } from "../../api";
 import { formatEventDateRange, sortEventsByStart } from "../../lib/eventDates";
+import EventDetails from "../ui/eventDetails.comp";
 import UserProfilePreview from "../ui/userProfilePreview.comp";
 import "../../Styles/Events.css";
+import { useAuth } from "../../authContext";
 
-const { Meta } = Card;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const getEventEnd = (event) => event.endDate || event.EndDate;
 const isPastEvent = (event) => moment(getEventEnd(event)).isBefore(moment());
 
 export default function Events({ view = "upcoming" }) {
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user, isAuthenticated, requireAuth } = useAuth();
+  const currentUser = isAuthenticated ? user : null;
   const [commentForm] = Form.useForm();
   const [reviewForm] = Form.useForm();
 
   useEffect(() => {
-    try {
-      setCurrentUser(JSON.parse(localStorage.getItem("user") || "null"));
-    } catch {
-      setCurrentUser(null);
-    }
     fetchEvents();
   }, []);
 
   const fetchEvents = async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const response = await axios.get(`${API_URL}/events`);
       const nextEvents = response.data || [];
       setEvents(nextEvents);
       return nextEvents;
     } catch (error) {
+      setLoadError(true);
       console.error("Failed to load events:", error);
       message.error("Failed to load events.");
       return [];
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,7 +88,7 @@ export default function Events({ view = "upcoming" }) {
                 String(currentUser._id),
             )
           ? "joined"
-          : "available"
+          : (selectedEvent.waitlist || []).some(id => String(id) === String(currentUser._id)) ? "waitlisted" : "available"
       : "guest";
 
   const participantCount = selectedEvent?.participants?.length || 0;
@@ -96,15 +97,18 @@ export default function Events({ view = "upcoming" }) {
   const currentUserId = currentUser?._id || currentUser?.id;
 
   const handleParticipate = async () => {
+    if (!requireAuth("join this event")) return;
+    if (joining) return;
+    setJoining(true);
     try {
-      await axios.put(
+      const response = await axios.put(
         `${API_URL}/events/${selectedEvent._id}/participate`,
         {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         },
       );
-      message.success("You joined this event.");
+      message.success(response.data?.message || "You joined this event.");
       await fetchEvents();
       setSelectedEvent(null);
     } catch (error) {
@@ -117,10 +121,23 @@ export default function Events({ view = "upcoming" }) {
           error.response?.data?.message || "Could not join this event.",
         );
       }
-    }
+    } finally { setJoining(false); }
+  };
+
+  const leaveWaitlist = async () => {
+    if (!requireAuth("leave the waitlist") || joining) return;
+    setJoining(true);
+    try {
+      await axios.delete(`${API_URL}/events/${selectedEvent._id}/waitlist`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      message.success("You left the waitlist.");
+      const nextEvents = await fetchEvents();
+      setSelectedEvent(nextEvents.find(event => event._id === selectedEvent._id) || null);
+    } catch (error) { message.error(error.response?.data?.message || "Could not leave the waitlist."); }
+    finally { setJoining(false); }
   };
 
   const submitComment = async ({ text }) => {
+    if (!requireAuth("add a comment")) return;
     try {
       await axios.post(
         `${API_URL}/events/${selectedEvent._id}/comments`,
@@ -149,6 +166,7 @@ export default function Events({ view = "upcoming" }) {
   };
 
   const submitReview = async (values) => {
+    if (!requireAuth("review this event")) return;
     try {
       await axios.post(
         `${API_URL}/events/${selectedEvent._id}/reviews`,
@@ -177,6 +195,7 @@ export default function Events({ view = "upcoming" }) {
   };
 
   const deleteEntry = async (entry, type) => {
+    if (!requireAuth("manage your contributions")) return;
     const endpoint = type === "comment" ? "comments" : "reviews";
     const entryLabel = type === "comment" ? "Comment" : "Review";
     try {
@@ -200,68 +219,39 @@ export default function Events({ view = "upcoming" }) {
 
   return (
     <>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="Search events"
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-          prefix={<SearchOutlined />}
-        />
-      </Space>
-      {visibleEvents.length === 0 ? (
-        <Empty
-          description={
-            view === "past"
-              ? "No past events yet"
-              : "No upcoming events available"
-          }
-        />
+      <div className="events-toolbar">
+        <Input className="events-search" aria-label="Search events" placeholder="Search events" allowClear value={searchText} onChange={(event) => setSearchText(event.target.value)} prefix={<SearchOutlined />} />
+      </div>
+      {loading ? <ContentSkeleton variant="feed" count={6} label="Loading events" /> : loadError ? <div className="events-empty"><p>Failed to load events.</p><Button onClick={fetchEvents}>Try again</Button></div> : visibleEvents.length === 0 ? (
+        <div className="events-empty">
+          <p>{searchText ? "No matching events" : view === "past" ? "No past events yet" : "No upcoming events available"}</p>
+          {searchText && <Button onClick={() => setSearchText("")}>Clear search</Button>}
+        </div>
       ) : (
-        <Row gutter={[16, 16]}>
+        <div className="dashboard-event-grid">
           {visibleEvents.map((event) => {
             const count = event.participants?.length || 0;
             const limit = event.maxParticipants || 50;
             return (
-              <Col key={event._id} xs={24} sm={12} md={8} lg={6}>
-                <Card
-                  className="event-card"
-                  hoverable
-                  onClick={() => setSelectedEvent(event)}
-                  cover={
-                    <img
-                      className="event-card-image"
-                      alt={event.title}
-                      src={getMediaUrl(event.coverImage, "event")}
-                    />
-                  }
-                >
-                  <Meta
-                    title={event.title}
-                    description={
-                      <>
-                        <Text className="event-card-description">
-                          {event.description}
-                        </Text>
-                        <p className="event-card-info">
-                          <CalendarOutlined /> {formatEventDateRange(event)}
-                        </p>
-                        <p className="event-card-info">
-                          <EnvironmentOutlined /> <b>{event.location}</b>
-                        </p>
-                        <p className="event-card-info">
-                          <TeamOutlined /> {count} / {limit} participants
-                        </p>
-                      </>
-                    }
-                  />
-                </Card>
-              </Col>
+              <LazyCard key={event._id} variant="feed" label="Loading event"><button className="dashboard-event-card" onClick={() => setSelectedEvent(event)} aria-label={`View ${event.title}`}>
+                <div className="dashboard-event-cover">
+                  <img alt={`Cover for ${event.title || "this event"}`} src={getMediaUrl(event.coverImage, "event")} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getMediaUrl(null, "event"); }} />
+                </div>
+                <div className="dashboard-event-body">
+                  <span className="event-card-location"><EnvironmentOutlined /> {event.location || "Location to be announced"}</span>
+                  <h3>{event.title}</h3>
+                  <p className="event-card-description">{event.description}</p>
+                  <p className="event-card-date"><CalendarOutlined /> {formatEventDateRange(event)}</p>
+                  <div className="event-card-footer"><span><TeamOutlined /> {count} / {limit} participants</span></div>
+                </div>
+              </button></LazyCard>
             );
           })}
-        </Row>
+        </div>
       )}
 
       <Modal
+        className="dashboard-event-modal"
         title={selectedEvent?.title}
         open={Boolean(selectedEvent)}
         onCancel={() => setSelectedEvent(null)}
@@ -269,60 +259,30 @@ export default function Events({ view = "upcoming" }) {
         width={820}
       >
         {selectedEvent && (
-          <div className="event-detail-grid">
-            <div>
-              <img
-                className="event-detail-image"
-                src={getMediaUrl(selectedEvent.coverImage, "event")}
-                alt={selectedEvent.title}
-              />
-              <Title level={4}>{selectedEvent.title}</Title>
-              <Text>{selectedEvent.description}</Text>
-              <div className="event-organizer">
-                <Text type="secondary">Organized by</Text>
-                <UserProfilePreview user={selectedEvent.organizer}>
-                  <span className="event-organizer-link">
-                    <Avatar
-                      size={34}
-                      src={getMediaUrl(
-                        selectedEvent.organizer?.profilePicture,
-                        "profile",
-                      )}
-                      alt={`${selectedEvent.organizer?.fname || "Event organizer"}`}
-                    />
-                    <strong>
-                      {`${selectedEvent.organizer?.fname || "Event organizer"} ${selectedEvent.organizer?.lname || ""}`.trim()}
-                    </strong>
-                  </span>
-                </UserProfilePreview>
-              </div>
-              <p>
-                <CalendarOutlined />{" "}
-                {formatEventDateRange(selectedEvent, { long: true })}
-              </p>
-              <p>
-                <EnvironmentOutlined /> {selectedEvent.location}
-              </p>
-              <p>
-                <TeamOutlined /> <strong>{participantCount}</strong> of{" "}
-                <strong>{capacity}</strong> participant spots
-              </p>
-              {view === "upcoming" && participationState === "available" && (
+          <LoadingContent loading={loading} variant="profile" label="Loading event details"><div className="event-detail-grid">
+            <EventDetails event={selectedEvent}>
+              {view === "upcoming" && (participationState === "available" || participationState === "guest") && (participantCount >= capacity || selectedEvent.waitlist?.length > 0) && <p>Join the waitlist to be registered automatically, in signup order, if a place opens before the event starts.</p>}
+              {view === "upcoming" && (participationState === "available" || participationState === "guest") && (
                 <Button
                   type="primary"
                   block
-                  disabled={participantCount >= capacity}
+                  loading={joining}
+                  disabled={new Date(selectedEvent.startDate) <= new Date()}
                   onClick={handleParticipate}
                 >
-                  {participantCount >= capacity ? "Event full" : "Participate"}
+                  {new Date(selectedEvent.startDate) <= new Date() ? "Registration closed" : participantCount >= capacity || selectedEvent.waitlist?.length ? "Join waitlist" : "Participate"}
                 </Button>
               )}
+              {view === "upcoming" && participationState === "waitlisted" && <>
+                <p role="status">You are on the waitlist · position {(selectedEvent.waitlist || []).findIndex(id => String(id) === String(currentUserId)) + 1}. You will be registered automatically if a place opens before the event starts.</p>
+                <Button block onClick={leaveWaitlist} loading={joining}>Leave waitlist</Button>
+              </>}
               {view === "upcoming" && participationState === "joined" && (
                 <Button block disabled>
                   You are participating
                 </Button>
               )}
-            </div>
+            </EventDetails>
             <div className="event-conversation">
               {view === "upcoming" ? (
                 <>
@@ -333,7 +293,7 @@ export default function Events({ view = "upcoming" }) {
                     renderItem={(comment) => (
                       <List.Item
                         actions={
-                          String(comment.user?._id) === String(currentUserId)
+                          currentUserId && String(comment.user?._id) === String(currentUserId)
                             ? [
                                 <Button
                                   type="text"
@@ -372,7 +332,7 @@ export default function Events({ view = "upcoming" }) {
                       </List.Item>
                     )}
                   />
-                  <Form form={commentForm} onFinish={submitComment}>
+                  {!isAuthenticated ? <Button type="primary" onClick={() => requireAuth("add a comment")}>Add comment</Button> : <Form form={commentForm} onFinish={submitComment}>
                     <Form.Item
                       name="text"
                       rules={[
@@ -388,7 +348,7 @@ export default function Events({ view = "upcoming" }) {
                     <Button type="primary" htmlType="submit">
                       Add comment
                     </Button>
-                  </Form>
+                  </Form>}
                 </>
               ) : (
                 <>
@@ -399,7 +359,7 @@ export default function Events({ view = "upcoming" }) {
                     renderItem={(review) => (
                       <List.Item
                         actions={
-                          String(review.user?._id) === String(currentUserId)
+                          currentUserId && String(review.user?._id) === String(currentUserId)
                             ? [
                                 <Button
                                   type="text"
@@ -441,6 +401,7 @@ export default function Events({ view = "upcoming" }) {
                       </List.Item>
                     )}
                   />
+                  {!isAuthenticated && <Button type="primary" onClick={() => requireAuth("review this event")}>Write a review</Button>}
                   {isParticipant && (
                     <Form form={reviewForm} onFinish={submitReview}>
                       <Form.Item
@@ -473,7 +434,7 @@ export default function Events({ view = "upcoming" }) {
                 </>
               )}
             </div>
-          </div>
+          </div></LoadingContent>
         )}
       </Modal>
     </>

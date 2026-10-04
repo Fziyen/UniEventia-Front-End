@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [authState, setAuthState] = useState({
+  const [authDialog, setAuthDialog] = useState(null);
+  const openAuth = useCallback((mode = "login", reason = "") => setAuthDialog({ mode, reason }), []);
+  const closeAuth = useCallback(() => setAuthDialog(null), []);
+  const [authState, setAuthState] = useState(() => ({
     isAuthenticated: Boolean(localStorage.getItem("token")),
     user: (() => {
       try {
@@ -12,7 +15,13 @@ export const AuthProvider = ({ children }) => {
         return null;
       }
     })(),
-  });
+  }));
+  const isAuthenticated = authState.isAuthenticated && Boolean(authState.user);
+  const requireAuth = (action = "continue") => {
+    if (isAuthenticated) return true;
+    openAuth("login", action);
+    return false;
+  };
 
   const login = (user) => {
     localStorage.setItem("user", JSON.stringify(user));
@@ -23,6 +32,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("activePage");
     setAuthState({
       isAuthenticated: false,
       user: null,
@@ -35,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ ...authState, isAuthenticated, authDialog, openAuth, closeAuth, requireAuth, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,3 +1,4 @@
+import { TextEncoder, TextDecoder } from "util";
 import "@testing-library/jest-dom";
 
 Object.defineProperty(window, "matchMedia", {
@@ -13,3 +14,7 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Polyfill web encoding APIs for the older Jest jsdom environment.
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
