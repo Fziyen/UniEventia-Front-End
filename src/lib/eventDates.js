@@ -21,16 +21,16 @@ export const formatEventDateRange = (event, options = {}) => {
   const end = moment(endValue);
 
   if (!start.isValid()) return "Date unavailable";
-  if (!end.isValid()) return start.format("MMM D, YYYY h:mm A");
+  if (!end.isValid()) return start.format("DD/MM/YYYY h:mm A");
 
   const startFormat = options.long
-    ? "dddd, MMMM D YYYY, h:mm A"
-    : "MMM D, YYYY h:mm A";
+    ? "dddd, DD/MM/YYYY, h:mm A"
+    : "DD/MM/YYYY h:mm A";
   const endFormat = start.isSame(end, "day")
     ? "h:mm A"
     : options.long
-      ? "dddd, MMMM D YYYY, h:mm A"
-      : "MMM D, YYYY h:mm A";
+      ? "dddd, DD/MM/YYYY, h:mm A"
+      : "DD/MM/YYYY h:mm A";
 
   return `${start.format(startFormat)} - ${end.format(endFormat)}`;
 };

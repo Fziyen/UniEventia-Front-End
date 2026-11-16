@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { API_URL } from "../../api";
 import { useAuth } from "../../authContext";
 import { compressImage } from "../../lib/compressImage";
+import { dateInputToIso } from "../../lib/dates";
 import { ContentSkeleton } from "../ui/loading.comp";
 import EventDetails from "../ui/eventDetails.comp";
 import "../../Styles/Events.css";
@@ -15,9 +16,11 @@ const steps = ["Event details", "Date & location", "Practical details & cover", 
 const emptyDraft = { title: "", description: "", startDay: "", endDay: "", startTime: "", endTime: "", location: "", maxParticipants: 50, language: "", wheelchairAccess: "unknown", cost: "", transport: "", whatToBring: "" };
 
 export function eventDates(draft) {
+  const startDay = dateInputToIso(draft.startDay);
+  const endDay = dateInputToIso(draft.endDay);
   return {
-    start: new Date(`${draft.startDay}T${draft.startTime}:00`),
-    end: new Date(`${draft.endDay}T${draft.endTime}:00`),
+    start: new Date(`${startDay}T${draft.startTime}:00`),
+    end: new Date(`${endDay}T${draft.endTime}:00`),
   };
 }
 
@@ -27,7 +30,7 @@ export function validateEventStep(draft, step) {
     if (!draft.startTime || !draft.endTime) return "Select both a start time and an end time.";
     const { start, end } = eventDates(draft);
     if (!draft.startDay || !draft.endDay || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "Select valid start and end dates.";
-    if (draft.startDay < moment().format("YYYY-MM-DD")) return "The start date cannot be in the past.";
+    if (dateInputToIso(draft.startDay) < moment().format("YYYY-MM-DD")) return "The start date cannot be in the past.";
     if (end <= start) return "End time must be after the start time.";
     if (!draft.location.trim()) return "Enter an event location.";
     if (!Number.isInteger(Number(draft.maxParticipants)) || Number(draft.maxParticipants) < 1 || Number(draft.maxParticipants) > 100000) return "Maximum participants must be a whole number between 1 and 100,000.";
@@ -152,7 +155,8 @@ export default function UploadEvent() {
           <label htmlFor="event-description">Description</label><Input.TextArea id="event-description" required rows={6} value={draft.description} onChange={update("description")} placeholder="Enter event description" />
         </>}
         {step === 1 && <>
-          <div className="event-create-row"><label>Start date<input aria-label="Start date" type="date" required min={moment().format("YYYY-MM-DD")} value={draft.startDay} onChange={update("startDay")} /></label><label>End date<input aria-label="End date" type="date" required min={draft.startDay || moment().format("YYYY-MM-DD")} value={draft.endDay} onChange={update("endDay")} /></label></div>
+          <div className="event-create-row"><label>Start date<input aria-label="Start date" type="text" inputMode="numeric" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" required value={draft.startDay} onChange={update("startDay")} /></label><label>End date<input aria-label="End date" type="text" inputMode="numeric" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" required value={draft.endDay} onChange={update("endDay")} /></label></div>
+          <p className="event-create-hint">Dates use DD/MM/YYYY. Start and end times use your local timezone.</p>
           <div className="event-create-row"><label>Start time<input aria-label="Start time" type="time" required value={draft.startTime} onChange={update("startTime")} /></label><label>End time<input aria-label="End time" type="time" required value={draft.endTime} onChange={update("endTime")} /></label></div>
           <p className="event-create-hint">Start and end times are required and use your local timezone.</p>
           <label htmlFor="event-location">Location</label><Input id="event-location" required value={draft.location} onChange={update("location")} />

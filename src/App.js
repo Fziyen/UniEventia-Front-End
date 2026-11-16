@@ -1,4 +1,5 @@
 import React from "react";
+import LegalPage from "./components/legal/legalPage.comp";
 import { Route, Routes } from "react-router-dom";
 import AuthModal from "./components/auth/authModal.comp";
 import Dashboard from "./components/dashboard.comp.jsx";
@@ -9,8 +10,12 @@ import Landing from "./components/landing.comp";
 function App() {
   return (
     <>
+    <a className="skip-link" href="#main-content">Skip to content</a>
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/privacy" element={<LegalPage />} />
+      <Route path="/terms" element={<LegalPage type="terms" />} />
+      <Route path="/report" element={<LegalPage type="report" />} />
       <Route path="/register" element={<Landing />} />
       <Route path="/login" element={<Landing />} />
       <Route

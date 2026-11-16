@@ -41,7 +41,12 @@
 .profile-hero h2 { color: var(--profile-ink); font-size: clamp(22px, 2.4vw, 29px); font-weight: 600; letter-spacing: -.7px; line-height: 1.25; margin: 0 0 5px; overflow-wrap: anywhere; }
 .profile-hero p { color: var(--profile-muted); margin: 0; font-size: 13px; overflow-wrap: anywhere; }
 .profile-role { display: inline-flex; align-items: center; margin-top: 12px; padding: 4px 10px; border: 1px solid #d0e2d7; border-radius: 6px; background: #ffffffa8; color: var(--profile-green); font-size: 11px; font-weight: 600; line-height: 1.5; }
-.profile-hero-actions { flex-shrink: 0; position: relative; z-index: 1; }
+.profile-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex-shrink: 0; position: relative; z-index: 1; }
+.profile-public-preview { border: 1px solid #c9dad0; border-radius: 7px; padding: 9px 14px; color: #30665e; background: #ffffffa8; font-size: 12px; }
+.profile-public-preview:focus-visible { outline: 2px solid #30665e; outline-offset: 3px; }
+.profile-history-settings { grid-column: 1 / -1; border-top: 1px solid #edf1ee; margin-top: 24px; padding-top: 20px; }
+.profile-history-settings h3 { color: #263b34; font-size: 14px; margin: 0 0 10px; }
+.profile-history-settings p { color: #6b7c74; font-size: 12px; line-height: 1.7; margin: 0 0 20px; }
 .profile-page .ant-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 38px; padding: 7px 15px; border-radius: 7px; font-size: 12px; font-weight: 500; box-shadow: none; }
 .profile-page .ant-btn-primary { background: var(--profile-green); border-color: var(--profile-green); }
 .profile-page .ant-btn-primary:not(:disabled):hover { background: #254f48; border-color: #254f48; }

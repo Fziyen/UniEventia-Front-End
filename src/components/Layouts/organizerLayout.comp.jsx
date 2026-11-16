@@ -1,4 +1,7 @@
 import React from "react";
+import Administration from "../tabs/administration.comp";
+import MyEvents from "../tabs/myEvents.comp";
+import { useAuth } from "../../authContext";
 import { Navigate } from "react-router-dom";
 import AppShell from "./appShell.comp";
 import Events from "../tabs/events.comp";
@@ -10,23 +13,20 @@ import ManageEvents from "../tabs/manageEvents.comp";
 import PastEvents from "../tabs/pastEvents.comp";
 
 export default function OrganizerLayout() {
-  let storedUser = null;
-
-  try {
-    storedUser = JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    storedUser = null;
-  }
-
-  if (!storedUser || storedUser.role !== "Organizer") {
-    return <Navigate to="/participant-layout" replace />;
+  const { user: storedUser } = useAuth();
+  if (!storedUser || !["Organizer", "Administrator"].includes(storedUser.role)) {
+    return <Navigate to="/Dashboard" replace />;
   }
 
   return (
     <AppShell
-      role="Organizer"
+      role={storedUser.role}
       renderPage={(page) => {
         switch (page) {
+          case "Administration":
+            return storedUser.role === "Administrator" ? <Administration /> : <Events />;
+          case "My Events":
+            return <MyEvents />;
           case "Upload Event":
             return <UploadEvent />;
           case "Manage Events":

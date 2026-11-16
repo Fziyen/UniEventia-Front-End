@@ -10,7 +10,7 @@ export async function compressImage(file, options = {}) {
       maxSizeMB: 1,
       maxWidthOrHeight: 1920,
       initialQuality: 0.82,
-      useWebWorker: true,
+      useWebWorker: false, // Avoid the library worker loading code from an external CDN.
       ...options,
     });
 

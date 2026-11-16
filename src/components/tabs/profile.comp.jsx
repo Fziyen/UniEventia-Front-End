@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   CameraOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   MailOutlined,
   SaveOutlined,
@@ -16,7 +17,6 @@ import {
   Input,
   message,
   Modal,
-  Select,
   Switch,
   Upload,
 } from "antd";
@@ -26,6 +26,9 @@ import { API_URL, getMediaUrl } from "../../api";
 import { compressImage } from "../../lib/compressImage";
 import { useAuth } from "../../authContext";
 import "../../Styles/Profile.css";
+import Eligibility from "../legal/eligibility.comp";
+import { isEligible } from "../legal/eligibility";
+import UserProfilePreview from "../ui/userProfilePreview.comp";
 
 const getStoredUser = () => {
   try {
@@ -43,7 +46,9 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { updateUser, logout } = useAuth();
+  const { user: sessionUser, updateUser, logout } = useAuth();
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const navigate = useNavigate();
 
   const displayName = useMemo(
@@ -65,7 +70,7 @@ export default function Profile() {
         });
         setUser(response.data);
         form.setFieldsValue(response.data);
-        localStorage.setItem("user", JSON.stringify(response.data));
+        updateUser(response.data);
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
         const storedUser = getStoredUser();
@@ -81,12 +86,53 @@ export default function Profile() {
     };
 
     fetchProfile();
-  }, [form]);
+  }, [form, updateUser]);
+
+  const requestOrganizer = async () => {
+    setIsRequesting(true);
+    try {
+      const { data } = await axios.post(`${API_URL}/users/profile/organizer-request`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setUser(data.user);
+      updateUser(data.user);
+      message.success(data.message);
+    } catch (error) {
+      message.error(error.response?.data?.message || "Unable to request organizer access.");
+    } finally { setIsRequesting(false); }
+  };
+  const removeOrganizerRole = () => {
+    Modal.confirm({
+      title: "Return to Participant?",
+      content: "Your existing events will remain published. You will lose access to creating and managing events. You can request organizer access again from Profile; administrators can still manage your published events.",
+      okText: "Return to Participant",
+      cancelText: "Keep organizer access",
+      onOk: async () => {
+        try {
+          const { data } = await axios.delete(`${API_URL}/users/profile/organizer-role`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          });
+          setUser(data.user); updateUser(data.user); message.success(data.message);
+        } catch (error) {
+          message.error(error.response?.data?.message || "Unable to remove organizer access.");
+          throw error;
+        }
+      },
+    });
+  };
+  const refreshRequest = async () => {
+    setIsRequesting(true);
+    try {
+      const { data } = await axios.get(`${API_URL}/users/profile`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      setUser(data); updateUser(data);
+    } catch { message.error("Unable to refresh your request."); }
+    finally { setIsRequesting(false); }
+  };
 
   const handleSave = async (values) => {
     setIsSaving(true);
     try {
-      const response = await axios.put(`${API_URL}/users/profile`, values, {
+      const response = await axios.put(`${API_URL}/users/profile`, Object.fromEntries(["fname", "lname", "username", "email", "bio", "emailPublic", "participationHistoryPublic", "reviewHistoryPublic"].filter(key => values[key] !== undefined).map(key => [key, values[key]])), {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setUser(response.data);
@@ -151,6 +197,7 @@ export default function Profile() {
 
   const handleDeleteAccount = () => {
     let confirmText = "";
+    let currentPassword = "";
 
     Modal.confirm({
       title: "Delete your account?",
@@ -162,17 +209,20 @@ export default function Profile() {
         <div>
           <p>
             This will permanently remove your account, profile, and access to
-            UniEventia. This action cannot be undone.
+            UniEventia, including events you organize, their covers, your comments, reviews, participation and waitlist entries. Download your data first. This action cannot be undone.
           </p>
           <p style={{ marginTop: 12, marginBottom: 8 }}>
             Type <strong>DELETE</strong> to confirm.
           </p>
           <Input
+            aria-label="Type DELETE to confirm"
             placeholder="DELETE"
             onChange={(event) => {
               confirmText = event.target.value;
             }}
           />
+          <label htmlFor="delete-password">Current password</label>
+          <Input.Password id="delete-password" autoComplete="current-password" onChange={e => { currentPassword = e.target.value; }} />
         </div>
       ),
       onOk: async () => {
@@ -183,6 +233,7 @@ export default function Profile() {
 
         try {
           await axios.delete(`${API_URL}/users/profile`, {
+            data: { password: currentPassword },
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -196,9 +247,31 @@ export default function Profile() {
             error.response?.data?.message ||
               "Your account could not be deleted.",
           );
+          return Promise.reject(new Error("Deletion failed"));
         }
       },
     });
+  };
+
+  const exportData = async () => {
+    setIsExporting(true);
+    try {
+      const { data } = await axios.get(`${API_URL}/users/profile/export`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a"); link.href = url; link.download = "unieventia-data.json";
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      message.success("Your data download is ready.");
+    } catch (err) { message.error(err.response?.data?.message || "Could not export your data. Please try again."); }
+    finally { setIsExporting(false); }
+  };
+  const removePhoto = async () => {
+    setIsUploading(true);
+    try {
+      const { data } = await axios.delete(`${API_URL}/users/profile-picture`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      setUser(data); updateUser(data); setProfileFile(null); message.success("Profile photo removed.");
+    } catch (err) { message.error(err.response?.data?.message || "Could not remove your photo."); }
+    finally { setIsUploading(false); }
   };
 
   if (isLoading)
@@ -207,6 +280,8 @@ export default function Profile() {
 
   return (
     <LoadingContent variant="profile" label="Loading your profile"><div className={`profile-page${isEditing ? " is-editing" : ""}`}>
+      {user.emailBanned && <p role="status">Your email address has been restricted. Existing sessions retain access to your profile and privacy controls, but you cannot change your email to bypass the restriction. Contact <a href="mailto:Lena@fziyen.dev">Lena@fziyen.dev</a> for a review.</p>}
+      {!isEligible(sessionUser) && <Eligibility />}
       <section className="profile-hero">
         <div className="profile-identity">
           <Avatar
@@ -225,6 +300,7 @@ export default function Profile() {
           </div>
         </div>
         <div className="profile-hero-actions">
+          <UserProfilePreview user={user} triggerClassName="profile-public-preview">View public profile</UserProfilePreview>
           <Button
             type="primary"
             icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
@@ -245,7 +321,7 @@ export default function Profile() {
             </div>
           }
         >
-          <Form form={form} layout="vertical" onFinish={handleSave}>
+          <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ participationHistoryPublic: true, reviewHistoryPublic: true }}>
             <div className="profile-form-grid">
               <Form.Item
                 label="First name"
@@ -279,20 +355,10 @@ export default function Profile() {
                 <Input disabled={!isEditing} prefix={<MailOutlined />} />
               </Form.Item>
               <Form.Item
-                label="Account role"
-                name="role"
-                rules={[{ required: true, message: "Choose a role." }]}
-              >
-                <Select disabled={!isEditing}>
-                  <Select.Option value="Participant">Participant</Select.Option>
-                  <Select.Option value="Organizer">Organizer</Select.Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
                 label="Email visibility"
                 name="emailPublic"
                 valuePropName="checked"
-                extra="Show your email to other members."
+                extra="Make your email public to everyone, including visitors without accounts. You can turn this off at any time."
               >
                 <Switch
                   disabled={!isEditing}
@@ -308,6 +374,16 @@ export default function Profile() {
                   maxLength={500}
                 />
               </Form.Item>
+              <div className="profile-history-settings">
+                <h3>Profile history visibility</h3>
+                <p>Choose which histories appear on your public profile. Attendance and reviews on individual event pages remain visible. Hosted events and organizer ratings always remain public.</p>
+                <Form.Item label="Show past participation on my profile" name="participationHistoryPublic" valuePropName="checked">
+                  <Switch disabled={!isEditing} checkedChildren="Public" unCheckedChildren="Private" />
+                </Form.Item>
+                <Form.Item label="Show written reviews on my profile" name="reviewHistoryPublic" valuePropName="checked">
+                  <Switch disabled={!isEditing} checkedChildren="Public" unCheckedChildren="Private" />
+                </Form.Item>
+              </div>
             </div>
             {isEditing && (
               <div className="profile-actions">
@@ -346,7 +422,7 @@ export default function Profile() {
               </Avatar>
               <div className="profile-upload-copy">
                 <strong>{profileFile?.name || "Make it yours"}</strong>
-                <span>JPG, PNG, or GIF up to 5 MB</span>
+                <span>JPG, PNG, or GIF up to 5 MB. Photos are public; remove location metadata before uploading.</span>
                 <Upload
                   beforeUpload={() => false}
                   maxCount={1}
@@ -362,6 +438,7 @@ export default function Profile() {
                 </Upload>
               </div>
             </div>
+            {user.profilePicture && <Button onClick={removePhoto} loading={isUploading}>Remove photo</Button>}
             {profileFile && (
               <Button
                 type="primary"
@@ -373,6 +450,29 @@ export default function Profile() {
                 Upload photo
               </Button>
             )}
+          </Card>
+
+          {user.role === "Organizer" && <Card className="profile-card" title="Organizer settings">
+            <p>Return to a participant account to use UniEventia only for discovering and joining events. Your existing events will remain published, with management available to administrators.</p>
+            <Button onClick={removeOrganizerRole}>Remove organizer role</Button>
+          </Card>}
+          {user.role === "Participant" && !user.emailBanned && isEligible(user) && <Card className="profile-card" title="Organize events">
+            <p>Request organizer access to create and manage events.</p>
+            {user.organizerRequest?.status === "pending" ? <>
+              <p role="status">Your request is awaiting administrator review.</p>
+              <Button loading={isRequesting} onClick={refreshRequest}>Check request status</Button>
+            </> : <>
+              {user.organizerRequest?.status === "rejected" && <p>Your last request was declined. You can submit a new request.</p>}
+              <Button type="primary" loading={isRequesting} onClick={requestOrganizer}>Request organizer access</Button>
+            </>}
+          </Card>}
+          <Card className="profile-card" title="Privacy and your data">
+            <div className="privacy-actions">
+              <p>Download your account, event and participation records. Your images can be downloaded using the URLs in the export before deleting your account.</p>
+              <Button icon={<DownloadOutlined />} onClick={exportData} loading={isExporting}>Download my data</Button>
+              <a href="/privacy">Read the Privacy Policy</a>
+              <a href="mailto:Lena@fziyen.dev?subject=UniEventia%20privacy%20request">Contact Lena about a privacy request</a>
+            </div>
           </Card>
 
           <Card

@@ -45,9 +45,6 @@ a {
   color: hsl(var(--primary));
 }
 
-.grecaptcha-badge {
-  visibility: hidden;
-}
 
 .ui-button {
   align-items: center;

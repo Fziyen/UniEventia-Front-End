@@ -1,0 +1,50 @@
+.member-profile { color: #263b34; }
+.member-profile-modal .ant-modal-content { padding: 24px; border-radius: 16px; }
+.member-profile-modal .ant-modal-title { color: #52665c; font-size: 13px; }
+.member-profile-hero { display: flex; align-items: center; gap: 22px; padding: 28px; margin-top: 20px; border: 1px solid #dce7e0; border-radius: 12px; background: linear-gradient(120deg, #f0f5ec, #f8faf6 65%, #e5f0e9); }
+.member-profile-hero .ant-avatar { flex: 0 0 auto; border: 3px solid #fff; color: #30665e; background: #d9eade; }
+.member-profile-identity { min-width: 0; flex: 1; }
+.member-profile-identity h2 { margin: 6px 0; font-size: 25px; line-height: 1.2; letter-spacing: -.6px; overflow-wrap: anywhere; }
+.member-profile-identity p { margin: 4px 0; color: #61766b; font-size: 12px; overflow-wrap: anywhere; }
+.member-profile-score { display: grid; gap: 6px; max-width: 170px; border-left: 1px solid #d8e3db; padding-left: 22px; }
+.member-profile-score > span { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #60766b; }
+.member-profile-score > strong { font-size: 38px; line-height: 1.2; letter-spacing: -1px; color: #30665e; }
+.member-profile-score small { font-size: 17px; font-weight: 400; color: #6b7c74; margin-left: 4px; }
+.member-profile-bio { padding: 24px 2px 8px; }
+.member-profile-bio h3 { margin: 0 0 8px; font-size: 14px; }
+.member-profile-bio p { color: #617168; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; margin: 0 0 16px; }
+.member-profile-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); border: 1px solid #e0e7e3; border-radius: 10px; overflow: hidden; }
+.member-profile-stats > div { display: grid; gap: 3px; padding: 17px 20px; background: #fafcf9; }
+.member-profile-stats strong { color: #30665e; font-size: 21px; font-weight: 600; }
+.member-profile-stats span { font-size: 12px; color: #6b7c74; }
+.member-profile-note { font-size: 11px; color: #6b7c74; margin: 12px 0 22px; }
+.member-history-list { display: grid; gap: 12px; margin-bottom: 18px; }
+.member-history-empty { background: #f7f9f6; color: #6b7c74; border: 1px dashed #dae3dc; border-radius: 10px; padding: 32px 20px; text-align: center; }
+.member-event-card { border: 1px solid #e0e7e3; border-radius: 10px; overflow: hidden; }
+.member-event-card summary { display: flex; align-items: center; gap: 16px; padding: 14px; cursor: pointer; list-style: none; }
+.member-event-card summary::-webkit-details-marker { display: none; }
+.member-event-card summary:focus-visible { outline: 2px solid #30665e; outline-offset: -3px; }
+.member-event-card summary > img { width: 76px; height: 76px; border-radius: 7px; object-fit: cover; flex: 0 0 auto; background: #edf2ee; }
+.member-event-copy { min-width: 0; flex: 1; display: grid; gap: 5px; }
+.member-event-copy strong { color: #263b34; font-size: 14px; overflow-wrap: anywhere; }
+.member-event-copy > span { display: flex; align-items: center; gap: 6px; color: #6b7c74; font-size: 12px; overflow-wrap: anywhere; }
+.member-event-copy svg, .member-event-chevron { flex: 0 0 auto; }
+.member-event-card[open] .member-event-chevron { transform: rotate(180deg); }
+.member-event-description { padding: 0 18px 16px; color: #617168; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.member-review-card { padding: 18px; border: 1px solid #e0e7e3; border-radius: 10px; background: #fff; }
+.member-review-heading { display: flex; justify-content: space-between; gap: 16px; color: #263b34; }
+.member-review-heading strong { font-size: 14px; overflow-wrap: anywhere; }
+.member-review-heading span { display: flex; gap: 5px; align-items: center; flex-shrink: 0; color: #856126; font-size: 13px; }
+.member-review-card p { color: #617168; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.member-review-card time { color: #7b8c82; font-size: 11px; }
+@media (max-width: 600px) {
+  .member-profile-modal .ant-modal-content { padding: 18px; }
+  .member-profile-hero { flex-wrap: wrap; padding: 20px; gap: 16px; }
+  .member-profile-identity { flex-basis: calc(100% - 110px); }
+  .member-profile-score { max-width: none; width: 100%; border-left: 0; border-top: 1px solid #d8e3db; padding: 14px 0 0; }
+  .member-profile-stats { grid-template-columns: 1fr; }
+  .member-profile-stats > div { display: flex; align-items: center; justify-content: space-between; }
+  .member-profile-stats strong { font-size: 18px; }
+  .member-event-card summary { gap: 10px; padding: 12px; }
+  .member-event-card summary > img { width: 60px; height: 66px; }
+}

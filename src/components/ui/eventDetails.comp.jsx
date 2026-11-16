@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 const dateAndTime = value => {
   const date = new Date(value);
   if (!value || Number.isNaN(date.getTime())) return "Date unavailable";
-  return <><span>{date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span><strong className="event-fact-time">{date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</strong></>;
+  return <><span>{date.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })}</span><strong className="event-fact-time">{date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</strong></>;
 };
 
 // Shared by Discover, My Events, organizer details and the creation preview.
@@ -33,6 +33,7 @@ export default function EventDetails({ event, coverUrl, preview = false, childre
       {event.waitlist?.length > 0 && <EventDetailRow icon={ListOrdered} label="Waitlist">{event.waitlist.length} waiting</EventDetailRow>}
     </dl>
     <EventPracticalDetails event={event} />
+    {!preview && event._id && <p><a href={`/report?item=${encodeURIComponent(`event:${event._id}`)}`} target="_blank" rel="noreferrer">Report this event or its content</a></p>}
     {children && <div className="event-detail-actions">{children}</div>}
   </div>;
 }

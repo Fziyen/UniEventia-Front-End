@@ -8,7 +8,7 @@ import { useAuth } from "../authContext";
 export default function Dashboard() {
   const { user: storedUser, isAuthenticated } = useAuth();
 
-  if (isAuthenticated && storedUser?.role === "Organizer") {
+  if (isAuthenticated && ["Organizer", "Administrator"].includes(storedUser?.role)) {
     return <OrganizerLayout />;
   }
 

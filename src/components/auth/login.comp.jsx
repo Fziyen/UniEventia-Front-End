@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Button, Input } from "antd";
 import { useAuth } from "../../authContext";
-import { useRecaptcha } from "./recaptcha";
 import { API_URL } from "../../api";
 
 export default function Login({ onSuccess, onSwitch, busy, setBusy }) {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
-  const { getToken, unavailable } = useRecaptcha("login");
   const { login } = useAuth();
 
   const submit = async (event) => {
@@ -17,15 +15,14 @@ export default function Login({ onSuccess, onSwitch, busy, setBusy }) {
     setError("");
     setBusy(true);
     try {
-      const recaptcha = await getToken();
-      const response = await axios.post(`${API_URL}/auth/login`, { ...form, identifier: form.identifier.trim(), recaptcha });
+      const response = await axios.post(`${API_URL}/auth/login`, { ...form, identifier: form.identifier.trim() });
       const { token, user } = response.data || {};
       if (!token || !user) throw new Error("Invalid authentication response. Please try again.");
       localStorage.setItem("token", token);
       login(user);
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || (err.message?.includes("reCAPTCHA") ? err.message : "Could not log in. Check your details and try again."));
+      setError(err.response?.data?.message || "Could not log in. Check your details and try again.");
     } finally {
       setBusy(false);
     }
@@ -40,11 +37,10 @@ export default function Login({ onSuccess, onSwitch, busy, setBusy }) {
         <label htmlFor="login-password">Password</label>
         <Input.Password id="login-password" autoComplete="current-password" required maxLength={128} value={form.password} disabled={busy} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         {error && <p className="auth-error" role="alert">{error}</p>}
-        {unavailable && <p className="auth-error" role="status">reCAPTCHA is unavailable. Please refresh and try again.</p>}
-        <Button type="primary" htmlType="submit" block loading={busy} disabled={unavailable}>Log in</Button>
+        <Button type="primary" htmlType="submit" block loading={busy}>Log in</Button>
       </form>
       <p className="auth-switch">New to UniEventia? <button onClick={onSwitch} disabled={busy}>Register</button></p>
-      <p className="auth-captcha">Protected by Google reCAPTCHA</p>
+      <p className="auth-captcha"><a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a></p>
     </div>
   );
 }

@@ -85,11 +85,11 @@ export const AuthProvider = ({ children }) => {
     setAuthState({ token: null, user: null });
     closeAuth();
   };
-  const updateUser = (user) => {
+  const updateUser = useCallback((user) => {
     if (!localStorage.getItem("token")) return;
     localStorage.setItem("user", JSON.stringify(user));
     setAuthState(current => ({ ...current, user }));
-  };
+  }, []);
 
   return <AuthContext.Provider value={{ user: authState.user, isAuthenticated, authDialog, openAuth, closeAuth, requireAuth, login, logout, updateUser }}>{children}</AuthContext.Provider>;
 };

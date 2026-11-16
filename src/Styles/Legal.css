@@ -1,0 +1,29 @@
+.legal-page { background: hsl(var(--background)); color: hsl(var(--foreground)); min-height: 100vh; }
+.legal-header, .legal-footer { max-width: 1080px; margin: auto; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.legal-brand { font-size: 1.35rem; font-weight: 800; }
+.legal-document { max-width: 860px; margin: auto; padding: 40px 24px 64px; line-height: 1.75; overflow-wrap: anywhere; }
+.legal-document h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.2; margin: 0 0 16px; }
+.legal-document h2 { margin: 36px 0 12px; font-size: 1.35rem; line-height: 1.4; }
+.legal-document p, .legal-document li { margin-bottom: 14px; }
+.legal-document ol { padding-left: 24px; }
+.legal-document a, .terms-agreement a, .legal-links a { text-decoration: underline; text-underline-offset: 3px; }
+.legal-eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.legal-lead { font-size: 1.15rem; }
+.legal-notice { border: 1px solid hsl(var(--border)); border-left: 4px solid hsl(var(--primary)); padding: 16px; border-radius: 6px; }
+.legal-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: .85rem; }
+.legal-table-wrap { overflow-x: auto; }
+.legal-document table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+.legal-document td, .legal-document th { padding: 12px; border: 1px solid hsl(var(--border)); text-align: left; vertical-align: top; min-width: 150px; }
+.legal-document th { background: hsl(var(--muted)); }
+.terms-agreement { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0; line-height: 1.6; font-size: .85rem; }
+.terms-agreement input { flex-shrink: 0; width: 18px; height: 18px; margin-top: 4px; }
+.eligibility-card { max-width: 620px; margin: auto; padding: 24px; line-height: 1.65; }
+.eligibility-card h2 { margin-bottom: 12px; }
+.eligibility-card p { margin: 12px 0; }
+.privacy-actions { display: flex; flex-direction: column; gap: 12px; }
+.legal-page a:focus-visible, .legal-links a:focus-visible, .terms-agreement input:focus-visible { outline: 3px solid hsl(var(--primary)); outline-offset: 4px; }
+@media (max-width: 600px) { .legal-document { padding-top: 24px; } .legal-header, .legal-footer { gap: 16px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+.skip-link { position: fixed; left: 12px; top: -100px; z-index: 2000; padding: 12px 20px; background: white; color: #174f49; border: 2px solid currentColor; border-radius: 8px; }
+.skip-link:focus { top: 12px; }

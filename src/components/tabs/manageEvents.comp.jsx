@@ -1,4 +1,5 @@
 import { LoadingContent, LazyCard } from "../ui/loading.comp";
+import { useAuth } from "../../authContext";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
@@ -39,9 +40,11 @@ const { Meta } = Card;
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
-const hasEnded = event => new Date(event?.endDate).getTime() <= Date.now();
+
 
 const ManageEvents = () => {
+  const { user } = useAuth();
+  const hasEnded = event => user?.role !== "Administrator" && new Date(event?.endDate).getTime() <= Date.now();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [events, setEvents] = useState([]);
@@ -557,7 +560,7 @@ const ManageEvents = () => {
                 disabledDate={(current) =>
                   current && current < moment().startOf("day")
                 }
-                format="YYYY-MM-DD"
+                format="DD/MM/YYYY"
                 style={{ width: "100%" }}
               />
             </Form.Item>

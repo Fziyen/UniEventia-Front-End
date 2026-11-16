@@ -16,7 +16,11 @@ export const getMediaUrl = (value, type = "profile") => {
     return getDefaultMediaUrl("profile");
   }
   if (value.startsWith("http://") || value.startsWith("https://")) {
-    return value;
+    try {
+      const origin = new URL(value).origin;
+      if (origin === new URL(MEDIA_URL).origin || origin === window.location.origin) return value;
+    } catch { /* Invalid or untrusted media uses a local placeholder. */ }
+    return getDefaultMediaUrl(type);
   }
   return `${MEDIA_URL}${value.startsWith("/") ? value : `/${value}`}`;
 };

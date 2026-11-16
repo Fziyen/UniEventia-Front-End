@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import LegalLinks from "./legal/legalLinks.comp";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, ImageIcon, Check } from "lucide-react";
 import { useAuth } from "../authContext";
@@ -75,7 +76,7 @@ export default function Landing() {
         </nav>
       </header>
 
-      <section className="landing-hero landing-container">
+      <section id="main-content" tabIndex={-1} className="landing-hero landing-container">
         <h1>
           Discover events
           <br /> on UniEventia
@@ -98,7 +99,7 @@ export default function Landing() {
           )}
         </div>
         <span className="landing-guest-note">
-          <Check size={14} aria-hidden="true" /> No account needed to browse.
+          <Check size={14} aria-hidden="true" /> Browse events without an account.
         </span>
       </section>
 
@@ -188,6 +189,7 @@ export default function Landing() {
       <footer className="landing-footer">
         <span>UniEventia</span>
         <span>Demo app for demonstration purposes only.</span>
+        <LegalLinks />
       </footer>
     </main>
   );

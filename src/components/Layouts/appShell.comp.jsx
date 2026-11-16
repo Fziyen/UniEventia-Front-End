@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import Eligibility from "../legal/eligibility.comp";
+import { isEligible } from "../legal/eligibility";
+import LegalLinks from "../legal/legalLinks.comp";
 import axios from "axios";
 import {
   Bell,
@@ -40,6 +43,12 @@ const participantNavigation = [
   { key: "Notifications", label: "Notifications", icon: Bell },
 ];
 
+const administratorNavigation = [
+  ...organizerNavigation,
+  { key: "My Events", label: "My events", icon: CalendarCheck2 },
+  { key: "Administration", label: "Administration", icon: ShieldCheck },
+];
+
 export default function AppShell({ role, renderPage }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -55,7 +64,7 @@ export default function AppShell({ role, renderPage }) {
   const navigate = useNavigate();
   const activeRole = isGuest ? "Guest" : user?.role || role;
   const isOrganizer = activeRole === "Organizer";
-  const navigation = isOrganizer ? organizerNavigation : participantNavigation;
+  const navigation = activeRole === "Administrator" ? administratorNavigation : isOrganizer ? organizerNavigation : participantNavigation;
 
   useEffect(() => {
     const availablePages = new Set([
@@ -71,7 +80,7 @@ export default function AppShell({ role, renderPage }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token || isGuest) { setUnreadNotifications(0); return; }
+    if (!token || isGuest || !isEligible(user)) { setUnreadNotifications(0); return; }
 
     const fetchUnreadNotifications = async () => {
       try {
@@ -86,7 +95,7 @@ export default function AppShell({ role, renderPage }) {
     };
 
     fetchUnreadNotifications();
-  }, [currentPage, isGuest]);
+  }, [currentPage, isGuest, user]);
 
   const displayName = user
     ? `${user.fname || ""} ${user.lname || ""}`.trim()
@@ -173,7 +182,7 @@ export default function AppShell({ role, renderPage }) {
         </div>
       </aside>
 
-      <main className={`app-main ${collapsed ? "sidebar-collapsed" : ""}`}>
+      <main id="main-content" tabIndex={-1} className={`app-main ${collapsed ? "sidebar-collapsed" : ""}`}>
         <header className="app-header">
           <div className="header-leading">
             <Button
@@ -234,15 +243,15 @@ export default function AppShell({ role, renderPage }) {
             <div>
               <p className="eyebrow">
                 <ShieldCheck size={14} />
-                {isGuest ? "Explore as a guest" : isOrganizer ? "Organizer workspace" : "Participant workspace"}
+                {isGuest ? "Explore as a guest" : activeRole === "Administrator" ? "Administrator workspace" : isOrganizer ? "Organizer workspace" : "Participant workspace"}
               </p>
               <h1>{visiblePage === "Events" ? "Find your next gathering" : visiblePage}</h1>
             </div>
           </div>
-          <Card className="page-panel">{renderPage(visiblePage)}</Card>
+          <Card className="page-panel">{!isGuest && !isEligible(user) && visiblePage !== "Profile" ? <Eligibility onProfile={() => selectPage("Profile")} /> : renderPage(visiblePage)}</Card>
         </section>
         <footer className="app-footer">
-          <span>Demo app for demonstration purposes only.</span>
+          <LegalLinks />
           <span>•</span>
           <a
             href="https://github.com/Fziyen/UniEventia-Front-End"
